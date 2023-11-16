@@ -1,5 +1,10 @@
 ﻿using System.Collections;
+using System.Drawing;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
+
+namespace AST;
 
 public class Program
 {
@@ -7,54 +12,102 @@ public class Program
     {
         var prog = "123 / 3 + (456 - 69) * 2";
         var parser = new Parser(prog);
+
+        Console.WriteLine();
+        var root = parser.Parse();
+
+
+        Console.WriteLine();
+        Console.WriteLine(prog);
+
+        var q = new Queue<INode>();
+        q.Enqueue(root);
+
+        var options = new JsonSerializerOptions(JsonSerializerDefaults.General)
+        {
+            WriteIndented = true,
+        };
+        var json = JsonSerializer.Serialize(root, options);
+        Console.WriteLine(json);
+
+        // int stop = 10;
+        // while (q.Count > 0 && stop > 0)
+        // {
+        //     stop--;
+
+        //     var node = q.Dequeue();
+        //     Console.WriteLine(node.Token.ToString(prog));
+        //     Console.WriteLine("  " + node.Children.Length);
+
+        //     foreach (var child in root.Children)
+        //     {
+        //         Console.WriteLine("+-> " + child.Token.ToString(prog));
+        //         q.Enqueue(child);
+        //     }
+        // }
     }
 }
 
-public class Node
+public interface INode
 {
-    public Node? Parrent;
-    public Token? Token;
+    public Token Token { get; }
+
+    public int ChildCount { get; }
+    public INode[] Children { get; }
 }
 
-public class BinaryNode : Node
+public class Node : INode
 {
-    public Node? Left;
-    public Node? Right;
+    public Token Token { get; set; } = default!;
+
+    public int ChildCount => 0;
+    public INode[] Children => Array.Empty<Node>();
 }
 
-public class UnaryNode : Node
+public class BinaryNode : INode
 {
-    public Node? Child;
+    public Token Token { get; set; } = default!;
+
+    public INode? Left;
+    public INode? Right;
+
+    public int ChildCount => 2;
+    public INode[] Children => new INode[] { Left!, Right! };
 }
 
 public class Parser
 {
+    public List<Token> Tokens;
     private string _content;
+    private int _cursor;
 
     public Parser(string content)
     {
         _content = content;
         var lexer = new Lexer(_content);
 
-        var tokens = new List<Token>();
+        Tokens = new List<Token>();
         {
             var token = lexer.Next();
             while (token.Kind != TokenKind.End)
             {
-                tokens.Add(token);
+                if (token.Kind != TokenKind.WhiteSpace)
+                {
+                    Tokens.Add(token);
+                }
                 token = lexer.Next();
             }
         }
 
-        foreach (var token in tokens)
+        foreach (var token in Tokens)
         {
-            Console.WriteLine($"{token.Kind}: `{_content[token.Range]}`");
+            Console.WriteLine(token.ToString(_content));
         }
     }
 
-    public Node ParseNode(List<Token> tokens, int id)
+    public INode Parse()
     {
-        var token = tokens[id];
+        var token = Tokens[_cursor];
 
         switch (token.Kind)
         {
@@ -62,21 +115,50 @@ public class Parser
             case TokenKind.MinusToken:
             case TokenKind.MultiplyToken:
             case TokenKind.DivideToken:
+                _cursor++;
                 return new BinaryNode
                 {
                     Token = token,
-                    Left = ParseNode(tokens, id + 1),
-                    Right = ParseNode(tokens, id + 1),
+                    Left = Parse(),
+                    Right = Parse(),
                 };
 
             case TokenKind.NumberLiteral:
-                return new Node
+                return Literal();
+
+            case TokenKind.OpenPrantecies:
+            case TokenKind.ClosePrantecies:
+
+            case TokenKind.End:
+                return new Node()
                 {
                     Token = token
                 };
-        }
 
-        return new Node();
+            default:
+                return new Node()
+                {
+                    Token = token,
+                };
+        }
+    }
+
+    private INode Literal()
+    {
+        Token token = Tokens[_cursor];
+        return token.Kind switch
+        {
+            TokenKind.NumberLiteral => NumberLiteral(),
+            _ => new Node { Token = token },
+        };
+    }
+
+    private INode NumberLiteral()
+    {
+        return new Node()
+        {
+            Token = Tokens[_cursor]
+        };
     }
 }
 
@@ -97,13 +179,25 @@ public enum TokenKind
 
 public class Token
 {
+    [JsonInclude]
+    public string Value => _content[Range];
+
+    [JsonInclude, JsonConverter(typeof(JsonStringEnumConverter))]
     public TokenKind Kind;
     public Range Range;
 
-    public Token(TokenKind kind, Range range)
+    private readonly string _content;
+
+    public Token(TokenKind kind, Range range, string content)
     {
         Kind = kind;
         Range = range;
+        this._content = content;
+    }
+
+    public string ToString(string content)
+    {
+        return $"{Kind}: `{content[Range]}`";
     }
 }
 
@@ -135,7 +229,7 @@ public class Lexer
     {
         if (_cursor >= _content.Length)
         {
-            return new Token(TokenKind.End, new Range(_cursor, _cursor + 1));
+            return new Token(TokenKind.End, new Range(_cursor, _cursor + 1), _content);
         }
 
         foreach (var spec in Specs)
@@ -145,10 +239,11 @@ public class Lexer
             {
                 var start = _cursor;
                 _cursor += match.Length;
-                return new Token(spec.Item2, new Range(start, _cursor));
+
+                return new Token(spec.Item2, new Range(start, _cursor), _content);
             }
         }
 
-        return new Token(TokenKind.Unknown, new Range(_cursor++, _cursor));
+        return new Token(TokenKind.Unknown, new Range(_cursor++, _cursor), _content);
     }
 }
