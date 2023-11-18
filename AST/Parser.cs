@@ -25,11 +25,6 @@ public class Parser
                 token = lexer.Next();
             }
         }
-
-        foreach (var token in _tokens)
-        {
-            Console.WriteLine(token.ToString());
-        }
     }
 
     public INode Parse()
