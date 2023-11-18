@@ -1,24 +1,22 @@
-﻿using System.Collections;
-using System.Drawing;
-using System.Text.Json;
+﻿using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 
 namespace AST;
 
-public class Program
+public static class Program
 {
     public static void Main()
     {
-        var prog = "123 / 3 + (456 - 69) * 2";
-        var parser = new Parser(prog);
+        var program = "123 / 3 + (456 - 69) * 2";
+        var parser = new Parser(program);
 
         Console.WriteLine();
         var root = parser.Parse();
 
 
         Console.WriteLine();
-        Console.WriteLine(prog);
+        Console.WriteLine(program);
 
         var q = new Queue<INode>();
         q.Enqueue(root);
@@ -29,22 +27,6 @@ public class Program
         };
         var json = JsonSerializer.Serialize(root, options);
         Console.WriteLine(json);
-
-        // int stop = 10;
-        // while (q.Count > 0 && stop > 0)
-        // {
-        //     stop--;
-
-        //     var node = q.Dequeue();
-        //     Console.WriteLine(node.Token.ToString(prog));
-        //     Console.WriteLine("  " + node.Children.Length);
-
-        //     foreach (var child in root.Children)
-        //     {
-        //         Console.WriteLine("+-> " + child.Token.ToString(prog));
-        //         q.Enqueue(child);
-        //     }
-        // }
     }
 }
 
@@ -58,27 +40,27 @@ public interface INode
 
 public class Node : INode
 {
-    public Token Token { get; set; } = default!;
+    public Token Token { get; init; } = default!;
 
     public int ChildCount => 0;
-    public INode[] Children => Array.Empty<Node>();
+    public INode[] Children => Array.Empty<INode>();
 }
 
 public class BinaryNode : INode
 {
-    public Token Token { get; set; } = default!;
+    public Token Token { get; init; } = default!;
 
     public INode? Left;
     public INode? Right;
 
     public int ChildCount => 2;
-    public INode[] Children => new INode[] { Left!, Right! };
+    public INode[] Children => new[] { Left!, Right! };
 }
 
 public class Parser
 {
-    public List<Token> Tokens;
-    private string _content;
+    private readonly List<Token> _tokens;
+    private readonly string _content;
     private int _cursor;
 
     public Parser(string content)
@@ -86,28 +68,28 @@ public class Parser
         _content = content;
         var lexer = new Lexer(_content);
 
-        Tokens = new List<Token>();
+        _tokens = new List<Token>();
         {
             var token = lexer.Next();
             while (token.Kind != TokenKind.End)
             {
                 if (token.Kind != TokenKind.WhiteSpace)
                 {
-                    Tokens.Add(token);
+                    _tokens.Add(token);
                 }
                 token = lexer.Next();
             }
         }
 
-        foreach (var token in Tokens)
+        foreach (var token in _tokens)
         {
-            Console.WriteLine(token.ToString(_content));
+            Console.WriteLine(token.ToString());
         }
     }
 
     public INode Parse()
     {
-        var token = Tokens[_cursor];
+        var token = _tokens[_cursor];
 
         switch (token.Kind)
         {
@@ -126,8 +108,8 @@ public class Parser
             case TokenKind.NumberLiteral:
                 return Literal();
 
-            case TokenKind.OpenPrantecies:
-            case TokenKind.ClosePrantecies:
+            case TokenKind.OpenParentheses:
+            case TokenKind.CloseParentheses:
 
             case TokenKind.End:
                 return new Node()
@@ -145,7 +127,7 @@ public class Parser
 
     private INode Literal()
     {
-        Token token = Tokens[_cursor];
+        Token token = _tokens[_cursor];
         return token.Kind switch
         {
             TokenKind.NumberLiteral => NumberLiteral(),
@@ -157,7 +139,7 @@ public class Parser
     {
         return new Node()
         {
-            Token = Tokens[_cursor]
+            Token = _tokens[_cursor]
         };
     }
 }
@@ -171,8 +153,8 @@ public enum TokenKind
     MinusToken = '-',
     MultiplyToken = '*',
     DivideToken = '/',
-    OpenPrantecies = '(',
-    ClosePrantecies = ')',
+    OpenParentheses = '(',
+    CloseParentheses = ')',
     StringLiteral = 48,
     WhiteSpace
 }
@@ -195,9 +177,9 @@ public class Token
         this._content = content;
     }
 
-    public string ToString(string content)
+    public override string ToString()
     {
-        return $"{Kind}: `{content[Range]}`";
+        return $"{Kind}: `{_content[Range]}`";
     }
 }
 
@@ -206,15 +188,14 @@ public class Lexer
     private readonly string _content;
     private int _cursor;
 
-    private (Regex, TokenKind)[] Specs = new[]
-    {
+    private readonly (Regex, TokenKind)[] _specs = {
         (new Regex(@"\G\s+", RegexOptions.Compiled), TokenKind.WhiteSpace),
         (new Regex(@"\G\+", RegexOptions.Compiled), TokenKind.PlusToken),
         (new Regex(@"\G\-", RegexOptions.Compiled), TokenKind.MinusToken),
         (new Regex(@"\G\*", RegexOptions.Compiled), TokenKind.MultiplyToken),
         (new Regex(@"\G\/", RegexOptions.Compiled), TokenKind.DivideToken),
-        (new Regex(@"\G\(", RegexOptions.Compiled), TokenKind.OpenPrantecies),
-        (new Regex(@"\G\)", RegexOptions.Compiled), TokenKind.ClosePrantecies),
+        (new Regex(@"\G\(", RegexOptions.Compiled), TokenKind.OpenParentheses),
+        (new Regex(@"\G\)", RegexOptions.Compiled), TokenKind.CloseParentheses),
         (new Regex(@"\G\d+", RegexOptions.Compiled), TokenKind.NumberLiteral),
         (new Regex("\\G\"[^\"]*$", RegexOptions.Compiled), TokenKind.StringLiteral),
     };
@@ -232,18 +213,20 @@ public class Lexer
             return new Token(TokenKind.End, new Range(_cursor, _cursor + 1), _content);
         }
 
-        foreach (var spec in Specs)
+        foreach (var spec in _specs)
         {
             Match match = spec.Item1.Match(_content, _cursor);
-            if (match.Success)
+            if (!match.Success)
             {
-                var start = _cursor;
-                _cursor += match.Length;
-
-                return new Token(spec.Item2, new Range(start, _cursor), _content);
+                continue;
             }
+
+            var start = _cursor;
+            _cursor += match.Length;
+
+            return new Token(spec.Item2, new Range(start, _cursor), _content);
         }
 
-        return new Token(TokenKind.Unknown, new Range(_cursor++, _cursor), _content);
+        return new Token(TokenKind.Unknown, new Range(_cursor, ++_cursor), _content);
     }
 }
