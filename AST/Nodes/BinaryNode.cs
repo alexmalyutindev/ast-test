@@ -10,7 +10,4 @@ public class BinaryNode : INode
 
     public INode? Left;
     public INode? Right;
-
-    [JsonIgnore] public int ChildCount => 2;
-    [JsonIgnore] public INode[] Children => new[] { Left!, Right! };
 }

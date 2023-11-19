@@ -138,6 +138,7 @@ public class Parser
 
     /// Literal
     /// : NumericLiteral
+    /// | StringLiteral
     /// ;
     private INode Literal()
     {
