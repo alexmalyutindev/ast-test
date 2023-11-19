@@ -56,6 +56,6 @@ public partial class Lexer
     [GeneratedRegex(@"\G\d+", RegexOptions.Compiled)]
     private static partial Regex NumberLiteral();
 
-    [GeneratedRegex("\\G\"[^\"]*$", RegexOptions.Compiled)]
+    [GeneratedRegex("\"(.*?)\"", RegexOptions.Compiled)]
     private static partial Regex StringLiteral();
 }

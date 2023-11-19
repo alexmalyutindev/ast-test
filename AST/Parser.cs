@@ -22,69 +22,96 @@ public class Parser
                 {
                     _tokens.Add(token);
                 }
+
                 token = lexer.Next();
             }
+            _tokens.Add(token); // Add end token
         }
+    }
+    
+    private Token? Current => _cursor >= _tokens.Count ? null : _tokens[_cursor];
+    private Token? PeekNext => _cursor + 1 >= _tokens.Count ? null : _tokens[_cursor + 1];
+
+    private Token Eat(TokenKind kind)
+    {
+        if (Current == null)
+        {
+            throw new Exception($"Syntax error: Expected token is `NULL`!");
+        }
+        
+        if (Current?.Kind != kind)
+        {
+            throw new Exception($"Syntax error: Expected token `{kind}`, but current token: `{PeekNext}`");
+        }
+
+        return _tokens[_cursor++];
     }
 
     public INode Parse()
     {
-        var token = _tokens[_cursor];
-
-        switch (token.Kind)
-        {
-            case TokenKind.PlusToken:
-            case TokenKind.MinusToken:
-            case TokenKind.MultiplyToken:
-            case TokenKind.DivideToken:
-                _cursor++;
-                return new BinaryNode
-                {
-                    Token = token,
-                    Left = Parse(),
-                    Right = Parse(),
-                };
-
-            case TokenKind.NumberLiteral:
-                return Literal();
-
-            case TokenKind.OpenParentheses:
-            case TokenKind.CloseParentheses:
-
-            case TokenKind.End:
-                return new Node()
-                {
-                    Token = token
-                };
-
-            default:
-                return new Node()
-                {
-                    Token = token,
-                };
-        }
+        return Program();
     }
 
-    private Token Eat()
+    private INode Program()
     {
-        return _tokens[_cursor++];
+        return Expression();
     }
 
+    private INode Expression()
+    {
+        return Literal();
+    }
+
+    /// Literal
+    /// : NumericLiteral
+    /// ;
     private INode Literal()
     {
-        Token token = _tokens[_cursor];
-        return token.Kind switch
+        var token = Current!;
+
+        var node = token.Kind switch
         {
             TokenKind.NumberLiteral => NumberLiteral(),
+            TokenKind.StringLiteral => StringLiteral(),
             _ => new Node { Token = token },
+        };
+
+        return node;
+        
+        if (PeekNext?.Kind is TokenKind.PlusToken or TokenKind.MinusToken)
+        {
+            var b= BinaryExpression();
+            b.Left = node;
+            node = b;
+        }
+
+        return node;
+    }
+
+    private INode StringLiteral()
+    {
+        return new Node()
+        {
+            Token = Eat(TokenKind.StringLiteral),
         };
     }
 
     private INode NumberLiteral()
     {
-        return new Node()
+        var token = Eat(TokenKind.NumberLiteral);
+        return new Node
         {
-            Token = _tokens[_cursor]
+            Token = token
+        };
+    }
+
+    private BinaryNode BinaryExpression()
+    {
+        var token = Eat(TokenKind.PlusToken);
+        return new BinaryNode()
+        {
+            Token = token,
+            Right = NumberLiteral()
         };
     }
 }

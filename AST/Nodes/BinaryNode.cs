@@ -1,3 +1,6 @@
+
+using Newtonsoft.Json;
+
 namespace AST.Nodes;
 
 public class BinaryNode : INode
@@ -7,6 +10,6 @@ public class BinaryNode : INode
     public INode? Left;
     public INode? Right;
 
-    public int ChildCount => 2;
-    public INode[] Children => new[] { Left!, Right! };
+    [JsonIgnore] public int ChildCount => 2;
+    [JsonIgnore] public INode[] Children => new[] { Left!, Right! };
 }
