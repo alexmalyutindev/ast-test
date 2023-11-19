@@ -20,7 +20,7 @@ class AstContractResolver : DefaultContractResolver
         {
             var property = CreateProperty(member, memberSerialization);
             
-            if (property.UnderlyingName == "Token")
+            if (property.PropertyName is "Token" or "Name")
             {
                 properties.Insert(0, property);
             }

@@ -129,14 +129,43 @@ public class Parser
     }
 
     /// Expression
-    /// : Literal
+    /// : AdditiveExpression
     /// ;
     private INode Expression()
     {
         return new ExpressionNode()
         {
-            Expression = Literal()
+            Expression = AdditiveExpression()
         };
+    }
+
+    /// AdditiveExpression
+    /// : AdditiveExpression AdditiveOperator Literal
+    /// ;
+    private INode AdditiveExpression()
+    {
+        var left = Literal();
+
+        while (Current!.Kind is TokenKind.PlusToken or TokenKind.MinusToken)
+        {
+            var op = Current.Kind switch
+            {
+                TokenKind.PlusToken => Eat(TokenKind.PlusToken),
+                TokenKind.MinusToken => Eat(TokenKind.MinusToken),
+                _ => throw new SyntaxError("Expected AdditiveExpression operator!"),
+            };
+
+            var right = Literal();
+
+            left = new BinaryNode()
+            {
+                Token = op,
+                Left = left,
+                Right = right
+            };
+        }
+
+        return left;
     }
 
     /// Literal

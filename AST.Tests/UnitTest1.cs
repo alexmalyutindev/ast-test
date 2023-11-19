@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Text;
 using AST.Nodes;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
@@ -147,19 +148,37 @@ public class Tests
     [Test]
     public void Test05_Sum()
     {
-        var src = "2 + 3;";
+        var src = "2 + 3 - 1;";
         var ast = new Parser(src).Parse();
-        var ast2 = new BinaryNode()
+        var ast2 = new ProgramNode()
         {
-            Token = new Token(TokenKind.PlusToken, new Range(2, 3), src),
-            Left = new Node()
+            ProgramName = "Program",
+            Body = new INode[]
             {
-                Token = new Token(TokenKind.NumberLiteral, new Range(0, 1), src)
-            },
-            Right = new Node()
-            {
-                Token = new Token(TokenKind.NumberLiteral, new Range(4, 5), src)
-            },
+                new ExpressionNode()
+                {
+                    Expression = new BinaryNode()
+                    {
+                        Token = new Token(TokenKind.MinusToken, new Range(6, 7), src),
+                        Left = new BinaryNode()
+                        {
+                            Token = new Token(TokenKind.PlusToken, new Range(2, 3), src),
+                            Left = new Node()
+                            {
+                                Token = new Token(TokenKind.NumberLiteral, new Range(0, 1), src)
+                            },
+                            Right = new Node()
+                            {
+                                Token = new Token(TokenKind.NumberLiteral, new Range(4, 5), src)
+                            },
+                        },
+                        Right = new Node()
+                        {
+                            Token = new Token(TokenKind.NumberLiteral, new Range(8, 9), src)
+                        }
+                    }
+                }
+            }
         };
 
         Compare(ast, ast2);
@@ -170,10 +189,23 @@ public class Tests
         var json = ToJson(current);
         var expectedJson = ToJson(expected);
 
+        var sb = new StringBuilder();
+        var splitA = json.Split('\n');
+        var splitB = expectedJson.Split('\n');
+        var lines = Math.Max(splitA.Length, splitB.Length);
+
+        sb.AppendLine($"{"AST:",-50} | EXPECTED:");
+        for (int i = 0; i < lines; i++)
+        {
+            var a = i >= splitA.Length ? " " : splitA[i];
+            var b = i >= splitB.Length ? " " : splitB[i];
+            sb.AppendLine($"{a,-50} | {b}");
+        }
+
         Assert.That(
             expectedJson,
             Is.EqualTo(json),
-            () => "AST:\n" + json + "\nEXPECTED:\n" + expectedJson
+            () => sb.ToString()
         );
 
         Console.WriteLine("AST:\n" + json);
