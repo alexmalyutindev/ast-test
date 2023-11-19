@@ -28,11 +28,18 @@ public class Tests
     [Test]
     public void Test01_NumberLiteral()
     {
-        var src = "  42  ";
+        var src = "42;";
         var ast = new Parser(src).Parse();
-        var ast2 = new Node()
+        var ast2 = new ProgramNode()
         {
-            Token = new Token(TokenKind.NumberLiteral, new Range(2, 2 + 2), src)
+            Token = new Token(TokenKind.Program),
+            Children = new INode[]
+            {
+                new Node()
+                {
+                    Token = new Token(TokenKind.NumberLiteral, new Range(0, 0 + 2), src)
+                },
+            }
         };
 
         Compare(ast, ast2);
@@ -41,20 +48,56 @@ public class Tests
     [Test]
     public void Test02_StringLiteral()
     {
-        var src = """ "abc 69" """;
+        var src = """ "abc 69" ;""";
         var ast = new Parser(src).Parse();
-        var ast2 = new Node()
+        var ast2 = new ProgramNode()
         {
-            Token = new Token(TokenKind.StringLiteral, new Range(1, 1 + 8), src)
+            Token = new Token(TokenKind.Program),
+            Children = new INode[]
+            {
+                new Node()
+                {
+                    Token = new Token(TokenKind.StringLiteral, new Range(1, 1 + 8), src)
+                },
+            }
         };
 
         Compare(ast, ast2);
     }
 
     [Test]
-    public void Test03_Sum()
+    public void Test03_MultipleStatements()
     {
-        var src = "2 + 3";
+        var src =
+            """
+            42;
+            "abc";
+            """;
+
+        var ast = new Parser(src).Parse();
+        var ast2 = new ProgramNode()
+        {
+            Token = new Token(TokenKind.Program),
+            Children = new INode[]
+            {
+                new Node()
+                {
+                    Token = new Token(TokenKind.NumberLiteral, new Range(0, 0 + 2), src)
+                },
+                new Node()
+                {
+                    Token = new Token(TokenKind.StringLiteral, new Range(4, 4 + 5), src)
+                },
+            }
+        };
+
+        Compare(ast, ast2);
+    }
+
+    [Test]
+    public void Test04_Sum()
+    {
+        var src = "2 + 3;";
         var ast = new Parser(src).Parse();
         var ast2 = new BinaryNode()
         {
@@ -73,7 +116,7 @@ public class Tests
     }
 
     [Test]
-    public void Test04_Presidency()
+    public void Test05_Presidency()
     {
         var src = "2 + 2 * 2";
         var ast = new Parser(src).Parse();

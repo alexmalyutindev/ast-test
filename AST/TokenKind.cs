@@ -12,5 +12,7 @@ public enum TokenKind
     OpenParentheses = '(',
     CloseParentheses = ')',
     StringLiteral = 48,
-    WhiteSpace
+    WhiteSpace,
+    Semicolon = ';',
+    Program
 }

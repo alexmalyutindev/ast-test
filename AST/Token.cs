@@ -4,19 +4,36 @@ public class Token
 {
     public string Value => _content[_range];
     public TokenKind Kind;
-    
+
     private readonly Range _range;
     private readonly string _content;
+
+    public Token(TokenKind kind)
+    {
+        Kind = kind;
+        _range = Range.All;
+        _content = String.Empty;
+    }
 
     public Token(TokenKind kind, Range range, string content)
     {
         Kind = kind;
         _range = range;
-        this._content = content;
+        _content = content;
     }
 
     public override string ToString()
     {
-        return $"{Kind}: `{_content[_range]}`";
+        if (_content.Length < _range.End.Value)
+        {
+            return $"{Kind}: [{_range.Start.Value}, {_range.End.Value}]";
+        }
+
+        if (!string.IsNullOrEmpty(_content))
+        {
+            return $"{Kind}: `{_content[_range]}`";
+        }
+
+        return $"{Kind}";
     }
 }

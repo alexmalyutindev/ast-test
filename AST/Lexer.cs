@@ -10,6 +10,8 @@ public partial class Lexer
     private readonly (Regex, TokenKind)[] _specs =
     {
         (WhiteSpace(), TokenKind.WhiteSpace),
+        (new Regex(@"\G\;", RegexOptions.Compiled), TokenKind.Semicolon),
+        
         (new Regex(@"\G\+", RegexOptions.Compiled), TokenKind.PlusToken),
         (new Regex(@"\G\-", RegexOptions.Compiled), TokenKind.MinusToken),
         (new Regex(@"\G\*", RegexOptions.Compiled), TokenKind.MultiplyToken),

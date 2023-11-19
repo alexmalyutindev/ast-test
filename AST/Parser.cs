@@ -25,10 +25,11 @@ public class Parser
 
                 token = lexer.Next();
             }
+
             _tokens.Add(token); // Add end token
         }
     }
-    
+
     private Token? Current => _cursor >= _tokens.Count ? null : _tokens[_cursor];
     private Token? PeekNext => _cursor + 1 >= _tokens.Count ? null : _tokens[_cursor + 1];
 
@@ -36,12 +37,15 @@ public class Parser
     {
         if (Current == null)
         {
-            throw new Exception($"Syntax error: Expected token is `NULL`!");
+            throw new SyntaxError($"Syntax error: Expected token is `NULL`!");
         }
-        
+
         if (Current?.Kind != kind)
         {
-            throw new Exception($"Syntax error: Expected token `{kind}`, but current token: `{PeekNext}`");
+            throw new SyntaxError(
+                $"Syntax error: Expected token `{kind}`, but current token: `{PeekNext}`\n" +
+                "Tokens:" + String.Join(", ", _tokens)
+            );
         }
 
         return _tokens[_cursor++];
@@ -52,11 +56,55 @@ public class Parser
         return Program();
     }
 
+    /// Program
+    /// : StatementList
+    /// ;
     private INode Program()
     {
-        return Expression();
+        return StatementList();
     }
 
+    /// StatementList
+    /// : Statement
+    /// | StatementList Statement
+    /// ;
+    private INode StatementList()
+    {
+        var statementList = new List<INode>() { Statement() };
+
+        while (Current?.Kind != TokenKind.End)
+        {
+            statementList.Add(Statement());
+        }
+
+        return new ProgramNode()
+        {
+            Token = new Token(TokenKind.Program),
+            Children = statementList.ToArray()
+        };
+    }
+
+    /// Statement
+    /// : ExpressionStatement
+    /// ;
+    private INode Statement()
+    {
+        return ExpressionStatement();
+    }
+
+    /// ExpressionStatement
+    /// : Expression ';'
+    /// ;
+    private INode ExpressionStatement()
+    {
+        var expression = Expression();
+        Eat(TokenKind.Semicolon);
+        return expression;
+    }
+
+    /// Expression
+    /// : Literal
+    /// ;
     private INode Expression()
     {
         return Literal();
@@ -75,15 +123,6 @@ public class Parser
             TokenKind.StringLiteral => StringLiteral(),
             _ => new Node { Token = token },
         };
-
-        return node;
-        
-        if (PeekNext?.Kind is TokenKind.PlusToken or TokenKind.MinusToken)
-        {
-            var b= BinaryExpression();
-            b.Left = node;
-            node = b;
-        }
 
         return node;
     }
@@ -114,4 +153,9 @@ public class Parser
             Right = NumberLiteral()
         };
     }
+}
+
+internal class SyntaxError : Exception
+{
+    public SyntaxError(string message) : base(message) { }
 }
