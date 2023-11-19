@@ -133,7 +133,10 @@ public class Parser
     /// ;
     private INode Expression()
     {
-        return Literal();
+        return new ExpressionNode()
+        {
+            Expression = Literal()
+        };
     }
 
     /// Literal

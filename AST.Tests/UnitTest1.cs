@@ -37,10 +37,13 @@ public class Tests
             ProgramName = "Program",
             Body = new INode[]
             {
-                new Node()
+                new ExpressionNode()
                 {
-                    Token = new Token(TokenKind.NumberLiteral, new Range(0, 0 + 2), src)
-                },
+                    Expression = new Node()
+                    {
+                        Token = new Token(TokenKind.NumberLiteral, new Range(0, 0 + 2), src)
+                    },
+                }
             }
         };
 
@@ -57,10 +60,13 @@ public class Tests
             ProgramName = "Program",
             Body = new INode[]
             {
-                new Node()
+                new ExpressionNode()
                 {
-                    Token = new Token(TokenKind.StringLiteral, new Range(1, 1 + 8), src)
-                },
+                    Expression = new Node()
+                    {
+                        Token = new Token(TokenKind.StringLiteral, new Range(1, 1 + 8), src)
+                    },
+                }
             }
         };
 
@@ -82,13 +88,19 @@ public class Tests
             ProgramName = "Program",
             Body = new INode[]
             {
-                new Node()
+                new ExpressionNode()
                 {
-                    Token = new Token(TokenKind.NumberLiteral, new Range(0, 0 + 2), src)
+                    Expression = new Node()
+                    {
+                        Token = new Token(TokenKind.NumberLiteral, new Range(0, 0 + 2), src)
+                    }
                 },
-                new Node()
+                new ExpressionNode()
                 {
-                    Token = new Token(TokenKind.StringLiteral, new Range(4, 4 + 5), src)
+                    Expression = new Node()
+                    {
+                        Token = new Token(TokenKind.StringLiteral, new Range(4, 4 + 5), src)
+                    }
                 },
             }
         };
@@ -110,13 +122,19 @@ public class Tests
                 {
                     Children = new INode[]
                     {
-                        new Node()
+                        new ExpressionNode()
                         {
-                            Token = new Token(TokenKind.NumberLiteral, new Range(2, 4), src)
+                            Expression = new Node()
+                            {
+                                Token = new Token(TokenKind.NumberLiteral, new Range(2, 4), src)
+                            }
                         },
-                        new Node()
+                        new ExpressionNode()
                         {
-                            Token = new Token(TokenKind.StringLiteral, new Range(6, 11), src)
+                            Expression = new Node()
+                            {
+                                Token = new Token(TokenKind.StringLiteral, new Range(6, 11), src)
+                            }
                         }
                     },
                 }
