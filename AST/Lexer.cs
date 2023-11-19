@@ -12,6 +12,9 @@ public partial class Lexer
         (WhiteSpace(), TokenKind.WhiteSpace),
         (new Regex(@"\G\;", RegexOptions.Compiled), TokenKind.Semicolon),
         
+        (new Regex(@"\G\{", RegexOptions.Compiled), TokenKind.OpenCurlyBrace),
+        (new Regex(@"\G\}", RegexOptions.Compiled), TokenKind.CloseCurlyBrace),
+        
         (new Regex(@"\G\+", RegexOptions.Compiled), TokenKind.PlusToken),
         (new Regex(@"\G\-", RegexOptions.Compiled), TokenKind.MinusToken),
         (new Regex(@"\G\*", RegexOptions.Compiled), TokenKind.MultiplyToken),

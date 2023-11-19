@@ -3,7 +3,7 @@ namespace AST;
 public class Token
 {
     public string Value => _content[_range];
-    public TokenKind Kind;
+    public TokenKind Kind { get; }
 
     private readonly Range _range;
     private readonly string _content;
@@ -31,7 +31,7 @@ public class Token
 
         if (!string.IsNullOrEmpty(_content))
         {
-            return $"{Kind}: `{_content[_range]}`";
+            return $"{Kind}: `{Value}`";
         }
 
         return $"{Kind}";

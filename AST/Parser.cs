@@ -37,7 +37,7 @@ public class Parser
     {
         if (Current == null)
         {
-            throw new SyntaxError($"Syntax error: Expected token is `NULL`!");
+            throw new SyntaxError($"Syntax error: Current token is `NULL` at {_cursor}!");
         }
 
         if (Current?.Kind != kind)
@@ -61,35 +61,61 @@ public class Parser
     /// ;
     private INode Program()
     {
-        return StatementList();
+        return new ProgramNode()
+        {
+            ProgramName = "Program",
+            Body = StatementList(),
+        };
     }
 
     /// StatementList
     /// : Statement
     /// | StatementList Statement
     /// ;
-    private INode StatementList()
+    private INode[] StatementList()
     {
         var statementList = new List<INode>() { Statement() };
 
-        while (Current?.Kind != TokenKind.End)
+        while (Current!.Kind is not (TokenKind.End or TokenKind.CloseCurlyBrace))
         {
             statementList.Add(Statement());
         }
 
-        return new ProgramNode()
-        {
-            Token = new Token(TokenKind.Program),
-            Children = statementList.ToArray()
-        };
+        return statementList.ToArray();
     }
 
     /// Statement
     /// : ExpressionStatement
+    /// | BlockStatement
     /// ;
     private INode Statement()
     {
-        return ExpressionStatement();
+        return Current!.Kind switch
+        {
+            TokenKind.OpenCurlyBrace => BlockStatement(),
+            _ => ExpressionStatement(),
+        };
+    }
+
+    /// BlockStatement
+    /// : '{' OptStatement '}'
+    /// ;
+    private INode BlockStatement()
+    {
+        Eat(TokenKind.OpenCurlyBrace);
+
+        INode statement = Current!.Kind switch
+        {
+            TokenKind.CloseCurlyBrace => new Node(), // TODO: StatementListNode
+            _ => new StatementListNode()
+            {
+                Children = StatementList(),
+            }
+        };
+
+        Eat(TokenKind.CloseCurlyBrace);
+
+        return statement;
     }
 
     /// ExpressionStatement

@@ -2,7 +2,9 @@ namespace AST.Nodes;
 
 public class ProgramNode : INode
 {
-    public Token Token { get; init; }
-    public int ChildCount => Children.Length;
-    public INode[] Children { get; init; }
+    public string Name => nameof(ProgramNode);
+
+    public string ProgramName { get; init; }
+    public int ChildCount => Body.Length;
+    public INode[] Body { get; init; }
 }

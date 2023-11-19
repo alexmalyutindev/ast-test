@@ -2,17 +2,25 @@ namespace AST;
 
 public enum TokenKind
 {
-    Unknown,
+    Program,
     End,
+    WhiteSpace,
+
     NumberLiteral,
     PlusToken = '+',
     MinusToken = '-',
     MultiplyToken = '*',
     DivideToken = '/',
+
     OpenParentheses = '(',
     CloseParentheses = ')',
+
     StringLiteral = 48,
-    WhiteSpace,
     Semicolon = ';',
-    Program
+
+    OpenCurlyBrace = '{',
+    CloseCurlyBrace = '}',
+
+    Unknown,
+    StatementList
 }

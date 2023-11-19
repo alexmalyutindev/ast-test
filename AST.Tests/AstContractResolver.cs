@@ -20,7 +20,7 @@ class AstContractResolver : DefaultContractResolver
         {
             var property = CreateProperty(member, memberSerialization);
             
-            if (property.UnderlyingName == nameof(INode.Token))
+            if (property.UnderlyingName == "Token")
             {
                 properties.Insert(0, property);
             }

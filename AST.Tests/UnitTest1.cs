@@ -21,7 +21,9 @@ public class Tests
                 new StringEnumConverter()
             },
             Formatting = Formatting.Indented,
-            ContractResolver = new AstContractResolver()
+            ContractResolver = new AstContractResolver(),
+            // TypeNameHandling = TypeNameHandling.All,
+            // TypeNameAssemblyFormatHandling = TypeNameAssemblyFormatHandling.Simple
         };
     }
 
@@ -32,8 +34,8 @@ public class Tests
         var ast = new Parser(src).Parse();
         var ast2 = new ProgramNode()
         {
-            Token = new Token(TokenKind.Program),
-            Children = new INode[]
+            ProgramName = "Program",
+            Body = new INode[]
             {
                 new Node()
                 {
@@ -52,8 +54,8 @@ public class Tests
         var ast = new Parser(src).Parse();
         var ast2 = new ProgramNode()
         {
-            Token = new Token(TokenKind.Program),
-            Children = new INode[]
+            ProgramName = "Program",
+            Body = new INode[]
             {
                 new Node()
                 {
@@ -77,8 +79,8 @@ public class Tests
         var ast = new Parser(src).Parse();
         var ast2 = new ProgramNode()
         {
-            Token = new Token(TokenKind.Program),
-            Children = new INode[]
+            ProgramName = "Program",
+            Body = new INode[]
             {
                 new Node()
                 {
@@ -95,30 +97,39 @@ public class Tests
     }
 
     [Test]
-    public void Test04_Sum()
+    public void Test04_Block()
     {
-        var src = "2 + 3;";
+        var src = """{ 42; "abc"; }""";
         var ast = new Parser(src).Parse();
-        var ast2 = new BinaryNode()
+        var ast2 = new ProgramNode()
         {
-            Token = new Token(TokenKind.PlusToken, new Range(2, 3), src),
-            Left = new Node()
+            ProgramName = "Program",
+            Body = new INode[]
             {
-                Token = new Token(TokenKind.NumberLiteral, new Range(0, 1), src)
-            },
-            Right = new Node()
-            {
-                Token = new Token(TokenKind.NumberLiteral, new Range(4, 5), src)
-            },
+                new StatementListNode()
+                {
+                    Children = new INode[]
+                    {
+                        new Node()
+                        {
+                            Token = new Token(TokenKind.NumberLiteral, new Range(2, 4), src)
+                        },
+                        new Node()
+                        {
+                            Token = new Token(TokenKind.StringLiteral, new Range(6, 11), src)
+                        }
+                    },
+                }
+            }
         };
 
         Compare(ast, ast2);
     }
 
     [Test]
-    public void Test05_Presidency()
+    public void Test05_Sum()
     {
-        var src = "2 + 2 * 2";
+        var src = "2 + 3;";
         var ast = new Parser(src).Parse();
         var ast2 = new BinaryNode()
         {
