@@ -18,6 +18,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\AST.Interpreter\AST.Interpreter.csproj" />
       <ProjectReference Include="..\AST\AST.csproj" />
     </ItemGroup>
 

@@ -183,6 +183,45 @@ public class Tests
 
         Compare(ast, ast2);
     }
+    
+    [Test]
+    public void Test06_SumAndMul()
+    {
+        var src = "1+2*3;";
+        var ast = new Parser(src).Parse();
+        var ast2 = new ProgramNode()
+        {
+            ProgramName = "Program",
+            Body = new INode[]
+            {
+                new ExpressionNode()
+                {
+                    Expression = new BinaryNode()
+                    {
+                        Left = new Node()
+                        {
+                            Token = new Token(TokenKind.NumberLiteral, new Range(0, 1), src)
+                        },
+                        Token = new Token(TokenKind.PlusToken, new Range(1, 2), src),
+                        Right = new BinaryNode()
+                        {
+                            Left = new Node()
+                            {
+                                Token = new Token(TokenKind.NumberLiteral, new Range(2, 3), src)
+                            },
+                            Token = new Token(TokenKind.MultiplyToken, new Range(3, 4), src),
+                            Right = new Node()
+                            {
+                                Token = new Token(TokenKind.NumberLiteral, new Range(4, 5), src)
+                            },
+                        }
+                    }
+                }
+            }
+        };
+
+        Compare(ast, ast2);
+    }
 
     private void Compare(INode current, INode expected)
     {

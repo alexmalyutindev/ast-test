@@ -44,7 +44,7 @@ public class Parser
         {
             throw new SyntaxError(
                 $"Syntax error: Expected token `{kind}`, but current token: `{PeekNext}`\n" +
-                "Tokens:" + String.Join(", ", _tokens)
+                "Tokens:\n " + String.Join("\n ", _tokens)
             );
         }
 
@@ -140,22 +140,17 @@ public class Parser
     }
 
     /// AdditiveExpression
-    /// : AdditiveExpression AdditiveOperator Literal
+    /// : MultiplicativeExpression
+    /// | AdditiveExpression ADDITIVE_OPERATOR MultiplicativeExpression -> MultiplicativeExpression ADDITIVE_OPERATOR MultiplicativeExpression
     /// ;
     private INode AdditiveExpression()
     {
-        var left = Literal();
+        var left = MultiplicativeExpression();
 
         while (Current!.Kind is TokenKind.PlusToken or TokenKind.MinusToken)
         {
-            var op = Current.Kind switch
-            {
-                TokenKind.PlusToken => Eat(TokenKind.PlusToken),
-                TokenKind.MinusToken => Eat(TokenKind.MinusToken),
-                _ => throw new SyntaxError("Expected AdditiveExpression operator!"),
-            };
-
-            var right = Literal();
+            var op = Eat(Current.Kind);
+            var right = MultiplicativeExpression();
 
             left = new BinaryNode()
             {
@@ -166,6 +161,39 @@ public class Parser
         }
 
         return left;
+    }
+    
+
+    /// MultiplicativeExpression
+    /// : PrimaryExpression
+    /// | MultiplicativeExpression MULTIPLICATIVE_OPERATOR PrimaryExpression -> PrimaryExpression MULTIPLICATIVE_OPERATOR PrimaryExpression
+    /// ;
+    private INode MultiplicativeExpression()
+    {
+        var left = PrimaryExpression();
+
+        while (Current!.Kind is TokenKind.MultiplyToken or TokenKind.DivideToken)
+        {
+            var op = Eat(Current.Kind);
+            var right = PrimaryExpression();
+
+            left = new BinaryNode()
+            {
+                Token = op,
+                Left = left,
+                Right = right
+            };
+        }
+
+        return left;
+    }
+
+    /// PrimaryExpression
+    /// : Literal
+    /// ;
+    private INode PrimaryExpression()
+    {
+        return Literal();
     }
 
     /// Literal
