@@ -38,9 +38,12 @@ public class Tests
             ProgramName = "Program",
             Body = new INode[]
             {
-                new Node()
+                new ExpressionStatementNode()
                 {
-                    Token = new Token(TokenKind.NumberLiteral, new Range(0, 0 + 2), src)
+                    Expression = new Node()
+                    {
+                        Token = new Token(TokenKind.NumberLiteral, new Range(0, 0 + 2), src)
+                    }
                 },
             }
         };
@@ -58,9 +61,12 @@ public class Tests
             ProgramName = "Program",
             Body = new INode[]
             {
-                new Node()
+                new ExpressionStatementNode()
                 {
-                    Token = new Token(TokenKind.StringLiteral, new Range(1, 1 + 8), src)
+                    Expression = new Node()
+                    {
+                        Token = new Token(TokenKind.StringLiteral, new Range(1, 1 + 8), src)
+                    }
                 },
             }
         };
@@ -83,13 +89,19 @@ public class Tests
             ProgramName = "Program",
             Body = new INode[]
             {
-                new Node()
+                new ExpressionStatementNode()
                 {
-                    Token = new Token(TokenKind.NumberLiteral, new Range(0, 0 + 2), src)
+                    Expression = new Node()
+                    {
+                        Token = new Token(TokenKind.NumberLiteral, new Range(0, 0 + 2), src)
+                    }
                 },
-                new Node()
+                new ExpressionStatementNode()
                 {
-                    Token = new Token(TokenKind.StringLiteral, new Range(4, 4 + 5), src)
+                    Expression = new Node()
+                    {
+                        Token = new Token(TokenKind.StringLiteral, new Range(4, 4 + 5), src)
+                    }
                 },
             }
         };
@@ -111,14 +123,20 @@ public class Tests
                 {
                     Children = new INode[]
                     {
-                        new Node()
+                        new ExpressionStatementNode()
                         {
-                            Token = new Token(TokenKind.NumberLiteral, new Range(2, 4), src)
+                            Expression = new Node()
+                            {
+                                Token = new Token(TokenKind.NumberLiteral, new Range(2, 4), src)
+                            }
                         },
-                        new Node()
+                        new ExpressionStatementNode()
                         {
-                            Token = new Token(TokenKind.StringLiteral, new Range(6, 11), src)
-                        }
+                            Expression = new Node()
+                            {
+                                Token = new Token(TokenKind.StringLiteral, new Range(6, 11), src)
+                            }
+                        },
                     },
                 }
             }
@@ -137,24 +155,27 @@ public class Tests
             ProgramName = "Program",
             Body = new INode[]
             {
-                new BinaryNode()
+                new ExpressionStatementNode()
                 {
-                    Token = new Token(TokenKind.MinusToken, new Range(6, 7), src),
-                    Left = new BinaryNode()
+                    Expression = new BinaryNode()
                     {
-                        Token = new Token(TokenKind.PlusToken, new Range(2, 3), src),
-                        Left = new Node()
+                        Token = new Token(TokenKind.MinusToken, new Range(6, 7), src),
+                        Left = new BinaryNode()
                         {
-                            Token = new Token(TokenKind.NumberLiteral, new Range(0, 1), src)
+                            Token = new Token(TokenKind.PlusToken, new Range(2, 3), src),
+                            Left = new Node()
+                            {
+                                Token = new Token(TokenKind.NumberLiteral, new Range(0, 1), src)
+                            },
+                            Right = new Node()
+                            {
+                                Token = new Token(TokenKind.NumberLiteral, new Range(4, 5), src)
+                            },
                         },
                         Right = new Node()
                         {
-                            Token = new Token(TokenKind.NumberLiteral, new Range(4, 5), src)
-                        },
-                    },
-                    Right = new Node()
-                    {
-                        Token = new Token(TokenKind.NumberLiteral, new Range(8, 9), src)
+                            Token = new Token(TokenKind.NumberLiteral, new Range(8, 9), src)
+                        }
                     }
                 }
             }
@@ -173,24 +194,27 @@ public class Tests
             ProgramName = "Program",
             Body = new INode[]
             {
-                new BinaryNode()
+                new ExpressionStatementNode()
                 {
-                    Left = new Node()
-                    {
-                        Token = new Token(TokenKind.NumberLiteral, new Range(0, 1), src)
-                    },
-                    Token = new Token(TokenKind.PlusToken, new Range(1, 2), src),
-                    Right = new BinaryNode()
+                    Expression = new BinaryNode()
                     {
                         Left = new Node()
                         {
-                            Token = new Token(TokenKind.NumberLiteral, new Range(2, 3), src)
+                            Token = new Token(TokenKind.NumberLiteral, new Range(0, 1), src)
                         },
-                        Token = new Token(TokenKind.MultiplyToken, new Range(3, 4), src),
-                        Right = new Node()
+                        Token = new Token(TokenKind.PlusToken, new Range(1, 2), src),
+                        Right = new BinaryNode()
                         {
-                            Token = new Token(TokenKind.NumberLiteral, new Range(4, 5), src)
-                        },
+                            Left = new Node()
+                            {
+                                Token = new Token(TokenKind.NumberLiteral, new Range(2, 3), src)
+                            },
+                            Token = new Token(TokenKind.MultiplyToken, new Range(3, 4), src),
+                            Right = new Node()
+                            {
+                                Token = new Token(TokenKind.NumberLiteral, new Range(4, 5), src)
+                            },
+                        }
                     }
                 }
             }
@@ -209,25 +233,28 @@ public class Tests
             ProgramName = "Program",
             Body = new INode[]
             {
-                new BinaryNode()
+                new ExpressionStatementNode()
                 {
-                    Left = new BinaryNode()
+                    Expression = new BinaryNode()
                     {
-                        Token = new Token(TokenKind.PlusToken, new Range(2, 3), src),
-                        Left = new Node()
+                        Left = new BinaryNode()
                         {
-                            Token = new Token(TokenKind.NumberLiteral, new Range(1, 2), src)
+                            Token = new Token(TokenKind.PlusToken, new Range(2, 3), src),
+                            Left = new Node()
+                            {
+                                Token = new Token(TokenKind.NumberLiteral, new Range(1, 2), src)
+                            },
+                            Right = new Node()
+                            {
+                                Token = new Token(TokenKind.NumberLiteral, new Range(3, 4), src)
+                            },
                         },
+                        Token = new Token(TokenKind.MultiplyToken, new Range(5, 6), src),
                         Right = new Node()
                         {
-                            Token = new Token(TokenKind.NumberLiteral, new Range(3, 4), src)
+                            Token = new Token(TokenKind.NumberLiteral, new Range(6, 7), src)
                         },
-                    },
-                    Token = new Token(TokenKind.MultiplyToken, new Range(5, 6), src),
-                    Right = new Node()
-                    {
-                        Token = new Token(TokenKind.NumberLiteral, new Range(6, 7), src)
-                    },
+                    }
                 }
             }
         };

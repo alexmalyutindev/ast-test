@@ -123,7 +123,11 @@ public class Parser
     /// ;
     private INode ExpressionStatement()
     {
-        var expression = Expression();
+        var expression = new ExpressionStatementNode()
+        {
+            Expression = Expression()
+        };
+
         Eat(TokenKind.Semicolon);
         return expression;
     }
@@ -159,7 +163,7 @@ public class Parser
 
         return left;
     }
-    
+
 
     /// MultiplicativeExpression
     /// : PrimaryExpression

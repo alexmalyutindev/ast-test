@@ -36,7 +36,7 @@ public class Interpreter
             case BinaryNode binaryNode:
                 EvalBinary(binaryNode);
                 break;
-            case ExpressionNode exp:
+            case ExpressionStatementNode exp:
                 Eval(exp.Expression);
                 break;
         }
