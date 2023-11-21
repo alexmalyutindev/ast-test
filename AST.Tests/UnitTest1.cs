@@ -271,10 +271,38 @@ public class Tests
             ProgramName = "Program",
             Body = new INode[]
             {
-                new LiteralNode(),
+                new StatementListNode()
+                {
+                    Children = new INode[]
+                    {
+                        new ExpressionStatementNode()
+                        {
+                            Expression = new BinaryExpressionNode()
+                            {
+                                Token = new Token(TokenKind.PlusToken, new Range(4, 5), src),
+                                Left = new LiteralNode
+                                    { Token = new Token(TokenKind.NumberLiteral, new Range(2, 3), src) },
+                                Right = new LiteralNode
+                                    { Token = new Token(TokenKind.NumberLiteral, new Range(6, 9), src) }
+                            }
+                        },
+                        new StatementListNode()
+                        {
+                            Children = new INode[]
+                            {
+                                new ExpressionStatementNode()
+                                {
+                                    Expression = new LiteralNode()
+                                        { Token = new Token(TokenKind.StringLiteral, new Range(13, 18), src) }
+                                },
+                            },
+                        },
+                    },
+                },
+                new StatementListNode { Children = Array.Empty<INode>() }
             }
         };
-        
+
         Compare(ast, ast2);
     }
 
