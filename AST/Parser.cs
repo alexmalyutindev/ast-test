@@ -133,10 +133,7 @@ public class Parser
     /// ;
     private INode Expression()
     {
-        return new ExpressionNode()
-        {
-            Expression = AdditiveExpression()
-        };
+        return AdditiveExpression();
     }
 
     /// AdditiveExpression
@@ -189,11 +186,28 @@ public class Parser
     }
 
     /// PrimaryExpression
-    /// : Literal
+    /// : ParenthesizedExpression
+    /// | Literal
     /// ;
     private INode PrimaryExpression()
     {
-        return Literal();
+        return Current!.Kind switch
+        {
+            TokenKind.OpenParentheses => ParenthesizedExpression(),
+            _ => Literal()
+        };
+    }
+
+    /// ParenthesizedExpression
+    /// : '(' Expression ')'
+    /// ;
+    private INode ParenthesizedExpression()
+    {
+        Eat(TokenKind.OpenParentheses);
+        var expression = Expression();
+        Eat(TokenKind.CloseParentheses);
+
+        return expression;
     }
 
     /// Literal

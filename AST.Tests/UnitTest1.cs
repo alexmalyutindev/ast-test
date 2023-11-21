@@ -38,13 +38,10 @@ public class Tests
             ProgramName = "Program",
             Body = new INode[]
             {
-                new ExpressionNode()
+                new Node()
                 {
-                    Expression = new Node()
-                    {
-                        Token = new Token(TokenKind.NumberLiteral, new Range(0, 0 + 2), src)
-                    },
-                }
+                    Token = new Token(TokenKind.NumberLiteral, new Range(0, 0 + 2), src)
+                },
             }
         };
 
@@ -61,13 +58,10 @@ public class Tests
             ProgramName = "Program",
             Body = new INode[]
             {
-                new ExpressionNode()
+                new Node()
                 {
-                    Expression = new Node()
-                    {
-                        Token = new Token(TokenKind.StringLiteral, new Range(1, 1 + 8), src)
-                    },
-                }
+                    Token = new Token(TokenKind.StringLiteral, new Range(1, 1 + 8), src)
+                },
             }
         };
 
@@ -89,19 +83,13 @@ public class Tests
             ProgramName = "Program",
             Body = new INode[]
             {
-                new ExpressionNode()
+                new Node()
                 {
-                    Expression = new Node()
-                    {
-                        Token = new Token(TokenKind.NumberLiteral, new Range(0, 0 + 2), src)
-                    }
+                    Token = new Token(TokenKind.NumberLiteral, new Range(0, 0 + 2), src)
                 },
-                new ExpressionNode()
+                new Node()
                 {
-                    Expression = new Node()
-                    {
-                        Token = new Token(TokenKind.StringLiteral, new Range(4, 4 + 5), src)
-                    }
+                    Token = new Token(TokenKind.StringLiteral, new Range(4, 4 + 5), src)
                 },
             }
         };
@@ -123,19 +111,13 @@ public class Tests
                 {
                     Children = new INode[]
                     {
-                        new ExpressionNode()
+                        new Node()
                         {
-                            Expression = new Node()
-                            {
-                                Token = new Token(TokenKind.NumberLiteral, new Range(2, 4), src)
-                            }
+                            Token = new Token(TokenKind.NumberLiteral, new Range(2, 4), src)
                         },
-                        new ExpressionNode()
+                        new Node()
                         {
-                            Expression = new Node()
-                            {
-                                Token = new Token(TokenKind.StringLiteral, new Range(6, 11), src)
-                            }
+                            Token = new Token(TokenKind.StringLiteral, new Range(6, 11), src)
                         }
                     },
                 }
@@ -155,27 +137,24 @@ public class Tests
             ProgramName = "Program",
             Body = new INode[]
             {
-                new ExpressionNode()
+                new BinaryNode()
                 {
-                    Expression = new BinaryNode()
+                    Token = new Token(TokenKind.MinusToken, new Range(6, 7), src),
+                    Left = new BinaryNode()
                     {
-                        Token = new Token(TokenKind.MinusToken, new Range(6, 7), src),
-                        Left = new BinaryNode()
+                        Token = new Token(TokenKind.PlusToken, new Range(2, 3), src),
+                        Left = new Node()
                         {
-                            Token = new Token(TokenKind.PlusToken, new Range(2, 3), src),
-                            Left = new Node()
-                            {
-                                Token = new Token(TokenKind.NumberLiteral, new Range(0, 1), src)
-                            },
-                            Right = new Node()
-                            {
-                                Token = new Token(TokenKind.NumberLiteral, new Range(4, 5), src)
-                            },
+                            Token = new Token(TokenKind.NumberLiteral, new Range(0, 1), src)
                         },
                         Right = new Node()
                         {
-                            Token = new Token(TokenKind.NumberLiteral, new Range(8, 9), src)
-                        }
+                            Token = new Token(TokenKind.NumberLiteral, new Range(4, 5), src)
+                        },
+                    },
+                    Right = new Node()
+                    {
+                        Token = new Token(TokenKind.NumberLiteral, new Range(8, 9), src)
                     }
                 }
             }
@@ -183,7 +162,7 @@ public class Tests
 
         Compare(ast, ast2);
     }
-    
+
     [Test]
     public void Test06_SumAndMul()
     {
@@ -194,28 +173,61 @@ public class Tests
             ProgramName = "Program",
             Body = new INode[]
             {
-                new ExpressionNode()
+                new BinaryNode()
                 {
-                    Expression = new BinaryNode()
+                    Left = new Node()
+                    {
+                        Token = new Token(TokenKind.NumberLiteral, new Range(0, 1), src)
+                    },
+                    Token = new Token(TokenKind.PlusToken, new Range(1, 2), src),
+                    Right = new BinaryNode()
                     {
                         Left = new Node()
                         {
-                            Token = new Token(TokenKind.NumberLiteral, new Range(0, 1), src)
+                            Token = new Token(TokenKind.NumberLiteral, new Range(2, 3), src)
                         },
-                        Token = new Token(TokenKind.PlusToken, new Range(1, 2), src),
-                        Right = new BinaryNode()
+                        Token = new Token(TokenKind.MultiplyToken, new Range(3, 4), src),
+                        Right = new Node()
                         {
-                            Left = new Node()
-                            {
-                                Token = new Token(TokenKind.NumberLiteral, new Range(2, 3), src)
-                            },
-                            Token = new Token(TokenKind.MultiplyToken, new Range(3, 4), src),
-                            Right = new Node()
-                            {
-                                Token = new Token(TokenKind.NumberLiteral, new Range(4, 5), src)
-                            },
-                        }
+                            Token = new Token(TokenKind.NumberLiteral, new Range(4, 5), src)
+                        },
                     }
+                }
+            }
+        };
+
+        Compare(ast, ast2);
+    }
+
+    [Test]
+    public void Test07_Parentheses()
+    {
+        var src = "(1+2)*3;";
+        var ast = new Parser(src).Parse();
+        var ast2 = new ProgramNode()
+        {
+            ProgramName = "Program",
+            Body = new INode[]
+            {
+                new BinaryNode()
+                {
+                    Left = new BinaryNode()
+                    {
+                        Token = new Token(TokenKind.PlusToken, new Range(2, 3), src),
+                        Left = new Node()
+                        {
+                            Token = new Token(TokenKind.NumberLiteral, new Range(1, 2), src)
+                        },
+                        Right = new Node()
+                        {
+                            Token = new Token(TokenKind.NumberLiteral, new Range(3, 4), src)
+                        },
+                    },
+                    Token = new Token(TokenKind.MultiplyToken, new Range(5, 6), src),
+                    Right = new Node()
+                    {
+                        Token = new Token(TokenKind.NumberLiteral, new Range(6, 7), src)
+                    },
                 }
             }
         };
