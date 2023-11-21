@@ -421,6 +421,9 @@ namespace AST
             return node;
         }
 
+        /// StringLiteral
+        /// : STRING
+        /// ;
         private INode StringLiteral()
         {
             return new LiteralNode()
@@ -429,6 +432,9 @@ namespace AST
             };
         }
 
+        /// NumberLiteral
+        /// : NUMBER
+        /// ;
         private INode NumberLiteral()
         {
             var token = Eat(TokenKind.NumberLiteral);
@@ -438,14 +444,25 @@ namespace AST
             };
         }
 
-        private BinaryExpressionNode BinaryExpression()
+        // TODO: Group operators
+        private INode BinaryExpression(/* TokenKind operator, */ Func<INode> expression)
         {
-            var token = Eat(TokenKind.PlusToken);
-            return new BinaryExpressionNode()
+            var left = expression();
+            
+            while (Current!.Kind is TokenKind.GreaterToken or TokenKind.LessToken or TokenKind.EqualsToken)
             {
-                Token = token,
-                Right = NumberLiteral()
-            };
+                var op = Eat(Current.Kind);
+                var right = expression();
+
+                left = new BinaryExpressionNode()
+                {
+                    Token = op,
+                    Left = left,
+                    Right = right
+                };
+            }
+
+            return left;
         }
     }
 

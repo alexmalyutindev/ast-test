@@ -29,6 +29,7 @@ public partial class Lexer
         (new Regex(@"\G\==", RegexOptions.Compiled), TokenKind.EqualsToken),
         (new Regex(@"\G\>", RegexOptions.Compiled), TokenKind.GreaterToken),
         (new Regex(@"\G\<", RegexOptions.Compiled), TokenKind.LessToken),
+        // TODO: Add '<=', '>='
 
         // Keywords
         (new Regex(@"\G\bvar\b", RegexOptions.Compiled), TokenKind.VariableDeclarationToken),
@@ -45,6 +46,7 @@ public partial class Lexer
         (new Regex(@"\G\-", RegexOptions.Compiled), TokenKind.MinusToken),
         (new Regex(@"\G\*", RegexOptions.Compiled), TokenKind.MultiplyToken),
         (new Regex(@"\G\/", RegexOptions.Compiled), TokenKind.DivideToken),
+        // TODO: Add '+=', '-=', '*=', '/='
 
         (StringLiteral(), TokenKind.StringLiteral),
     };
