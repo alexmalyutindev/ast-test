@@ -2,9 +2,9 @@ using Newtonsoft.Json;
 
 namespace AST.Nodes;
 
-public class BinaryNode : INode
+public class BinaryExpressionNode : INode
 {
-    public string Name => nameof(BinaryNode);
+    public string Name => nameof(BinaryExpressionNode);
 
     public Token Token { get; init; } = default!;
 

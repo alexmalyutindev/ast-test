@@ -106,7 +106,7 @@ public class Parser
 
         INode statement = Current!.Kind switch
         {
-            TokenKind.CloseCurlyBrace => new Node(), // TODO: StatementListNode
+            TokenKind.CloseCurlyBrace => new LiteralNode(), // TODO: StatementListNode
             _ => new StatementListNode()
             {
                 Children = StatementList(),
@@ -153,7 +153,7 @@ public class Parser
             var op = Eat(Current.Kind);
             var right = MultiplicativeExpression();
 
-            left = new BinaryNode()
+            left = new BinaryExpressionNode()
             {
                 Token = op,
                 Left = left,
@@ -178,7 +178,7 @@ public class Parser
             var op = Eat(Current.Kind);
             var right = PrimaryExpression();
 
-            left = new BinaryNode()
+            left = new BinaryExpressionNode()
             {
                 Token = op,
                 Left = left,
@@ -226,7 +226,7 @@ public class Parser
         {
             TokenKind.NumberLiteral => NumberLiteral(),
             TokenKind.StringLiteral => StringLiteral(),
-            _ => new Node { Token = token },
+            _ => new LiteralNode { Token = token },
         };
 
         return node;
@@ -234,7 +234,7 @@ public class Parser
 
     private INode StringLiteral()
     {
-        return new Node()
+        return new LiteralNode()
         {
             Token = Eat(TokenKind.StringLiteral),
         };
@@ -243,16 +243,16 @@ public class Parser
     private INode NumberLiteral()
     {
         var token = Eat(TokenKind.NumberLiteral);
-        return new Node
+        return new LiteralNode
         {
             Token = token
         };
     }
 
-    private BinaryNode BinaryExpression()
+    private BinaryExpressionNode BinaryExpression()
     {
         var token = Eat(TokenKind.PlusToken);
-        return new BinaryNode()
+        return new BinaryExpressionNode()
         {
             Token = token,
             Right = NumberLiteral()

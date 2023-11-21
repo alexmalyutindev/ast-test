@@ -33,7 +33,7 @@ public class Interpreter
     {
         switch (node)
         {
-            case BinaryNode binaryNode:
+            case BinaryExpressionNode binaryNode:
                 EvalBinary(binaryNode);
                 break;
             case ExpressionStatementNode exp:
@@ -42,16 +42,16 @@ public class Interpreter
         }
     }
 
-    private void EvalBinary(BinaryNode binaryNode)
+    private void EvalBinary(BinaryExpressionNode binaryExpressionNode)
     {
         var type = TokenKind.NumberLiteral;
 
-        switch (binaryNode.Left)
+        switch (binaryExpressionNode.Left)
         {
-            case BinaryNode b:
+            case BinaryExpressionNode b:
                 EvalBinary(b);
                 break;
-            case Node n:
+            case LiteralNode n:
                 type = n.Token.Kind;
                 if (n.Token.Kind == TokenKind.NumberLiteral)
                     Stack.Push(Int32.Parse(n.Token.Value));
@@ -60,12 +60,12 @@ public class Interpreter
                 break;
         }
 
-        switch (binaryNode.Right)
+        switch (binaryExpressionNode.Right)
         {
-            case BinaryNode b:
+            case BinaryExpressionNode b:
                 EvalBinary(b);
                 break;
-            case Node n:
+            case LiteralNode n:
                 type = n.Token.Kind;
                 if (n.Token.Kind == TokenKind.NumberLiteral)
                     Stack.Push(Int32.Parse(n.Token.Value));
@@ -77,7 +77,7 @@ public class Interpreter
         if (type == TokenKind.NumberLiteral)
         {
             var (right, left) = (Stack.Pop(), Stack.Pop());
-            switch (binaryNode.Token.Kind)
+            switch (binaryExpressionNode.Token.Kind)
             {
                 case TokenKind.PlusToken:
                     Stack.Push(left + right);

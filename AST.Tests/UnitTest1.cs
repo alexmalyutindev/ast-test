@@ -40,7 +40,7 @@ public class Tests
             {
                 new ExpressionStatementNode()
                 {
-                    Expression = new Node()
+                    Expression = new LiteralNode()
                     {
                         Token = new Token(TokenKind.NumberLiteral, new Range(0, 0 + 2), src)
                     }
@@ -63,7 +63,7 @@ public class Tests
             {
                 new ExpressionStatementNode()
                 {
-                    Expression = new Node()
+                    Expression = new LiteralNode()
                     {
                         Token = new Token(TokenKind.StringLiteral, new Range(1, 1 + 8), src)
                     }
@@ -91,14 +91,14 @@ public class Tests
             {
                 new ExpressionStatementNode()
                 {
-                    Expression = new Node()
+                    Expression = new LiteralNode()
                     {
                         Token = new Token(TokenKind.NumberLiteral, new Range(0, 0 + 2), src)
                     }
                 },
                 new ExpressionStatementNode()
                 {
-                    Expression = new Node()
+                    Expression = new LiteralNode()
                     {
                         Token = new Token(TokenKind.StringLiteral, new Range(4, 4 + 5), src)
                     }
@@ -125,14 +125,14 @@ public class Tests
                     {
                         new ExpressionStatementNode()
                         {
-                            Expression = new Node()
+                            Expression = new LiteralNode()
                             {
                                 Token = new Token(TokenKind.NumberLiteral, new Range(2, 4), src)
                             }
                         },
                         new ExpressionStatementNode()
                         {
-                            Expression = new Node()
+                            Expression = new LiteralNode()
                             {
                                 Token = new Token(TokenKind.StringLiteral, new Range(6, 11), src)
                             }
@@ -157,22 +157,22 @@ public class Tests
             {
                 new ExpressionStatementNode()
                 {
-                    Expression = new BinaryNode()
+                    Expression = new BinaryExpressionNode()
                     {
                         Token = new Token(TokenKind.MinusToken, new Range(6, 7), src),
-                        Left = new BinaryNode()
+                        Left = new BinaryExpressionNode()
                         {
                             Token = new Token(TokenKind.PlusToken, new Range(2, 3), src),
-                            Left = new Node()
+                            Left = new LiteralNode()
                             {
                                 Token = new Token(TokenKind.NumberLiteral, new Range(0, 1), src)
                             },
-                            Right = new Node()
+                            Right = new LiteralNode()
                             {
                                 Token = new Token(TokenKind.NumberLiteral, new Range(4, 5), src)
                             },
                         },
-                        Right = new Node()
+                        Right = new LiteralNode()
                         {
                             Token = new Token(TokenKind.NumberLiteral, new Range(8, 9), src)
                         }
@@ -196,21 +196,21 @@ public class Tests
             {
                 new ExpressionStatementNode()
                 {
-                    Expression = new BinaryNode()
+                    Expression = new BinaryExpressionNode()
                     {
-                        Left = new Node()
+                        Left = new LiteralNode()
                         {
                             Token = new Token(TokenKind.NumberLiteral, new Range(0, 1), src)
                         },
                         Token = new Token(TokenKind.PlusToken, new Range(1, 2), src),
-                        Right = new BinaryNode()
+                        Right = new BinaryExpressionNode()
                         {
-                            Left = new Node()
+                            Left = new LiteralNode()
                             {
                                 Token = new Token(TokenKind.NumberLiteral, new Range(2, 3), src)
                             },
                             Token = new Token(TokenKind.MultiplyToken, new Range(3, 4), src),
-                            Right = new Node()
+                            Right = new LiteralNode()
                             {
                                 Token = new Token(TokenKind.NumberLiteral, new Range(4, 5), src)
                             },
@@ -235,22 +235,22 @@ public class Tests
             {
                 new ExpressionStatementNode()
                 {
-                    Expression = new BinaryNode()
+                    Expression = new BinaryExpressionNode()
                     {
-                        Left = new BinaryNode()
+                        Left = new BinaryExpressionNode()
                         {
                             Token = new Token(TokenKind.PlusToken, new Range(2, 3), src),
-                            Left = new Node()
+                            Left = new LiteralNode()
                             {
                                 Token = new Token(TokenKind.NumberLiteral, new Range(1, 2), src)
                             },
-                            Right = new Node()
+                            Right = new LiteralNode()
                             {
                                 Token = new Token(TokenKind.NumberLiteral, new Range(3, 4), src)
                             },
                         },
                         Token = new Token(TokenKind.MultiplyToken, new Range(5, 6), src),
-                        Right = new Node()
+                        Right = new LiteralNode()
                         {
                             Token = new Token(TokenKind.NumberLiteral, new Range(6, 7), src)
                         },
