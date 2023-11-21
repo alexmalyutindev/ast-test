@@ -8,7 +8,10 @@ public class OtherTests
     [TestCase("2 + 2;")]
     [TestCase("2 + 2 * 2;")]
     [TestCase("(2 + 2) * 2;")]
-    public void Test1(string src)
+    [TestCase("(2);")]
+    [TestCase("{ }")]
+    [TestCase("var a = 2;")]
+    public void SyntaxTests(string src)
     {
         var parser = new Parser(src);
         var root = parser.Parse();

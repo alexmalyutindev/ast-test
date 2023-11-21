@@ -98,24 +98,24 @@ public class Parser
     }
 
     /// BlockStatement
-    /// : '{' OptStatement '}'
+    /// : '{' OptStatementList '}'
     /// ;
     private INode BlockStatement()
     {
         Eat(TokenKind.OpenCurlyBrace);
 
-        INode statement = Current!.Kind switch
+        INode[] body = Current!.Kind switch
         {
-            TokenKind.CloseCurlyBrace => new LiteralNode(), // TODO: StatementListNode
-            _ => new StatementListNode()
-            {
-                Children = StatementList(),
-            }
+            TokenKind.CloseCurlyBrace => Array.Empty<INode>(),
+            _ => StatementList(),
         };
 
         Eat(TokenKind.CloseCurlyBrace);
 
-        return statement;
+        return new StatementListNode()
+        {
+            Children = body,
+        };
     }
 
     /// ExpressionStatement

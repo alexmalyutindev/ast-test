@@ -21,6 +21,13 @@ public partial class Lexer
         (new Regex(@"\G\/", RegexOptions.Compiled), TokenKind.DivideToken),
         (new Regex(@"\G\(", RegexOptions.Compiled), TokenKind.OpenParentheses),
         (new Regex(@"\G\)", RegexOptions.Compiled), TokenKind.CloseParentheses),
+        
+        (new Regex(@"\G\==", RegexOptions.Compiled), TokenKind.EqualsToken),
+        (new Regex(@"\G\=", RegexOptions.Compiled), TokenKind.AssignToken),
+        
+        (new Regex(@"\Gvar", RegexOptions.Compiled), TokenKind.VariableDeclaration),
+        (Variable(), TokenKind.Variable),
+        
         (NumberLiteral(), TokenKind.NumberLiteral),
         (StringLiteral(), TokenKind.StringLiteral),
     };
@@ -63,4 +70,6 @@ public partial class Lexer
 
     [GeneratedRegex("\"(.*?)\"", RegexOptions.Compiled)]
     private static partial Regex StringLiteral();
+    [GeneratedRegex(@"\G[a-zA-Z_@][\w]*", RegexOptions.Compiled)]
+    private static partial Regex Variable();
 }

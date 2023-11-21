@@ -19,12 +19,11 @@ public class Tests
         {
             Converters = new Collection<JsonConverter>()
             {
-                new StringEnumConverter()
+                new StringEnumConverter(),
+                new TokenConverter(),
             },
             Formatting = Formatting.Indented,
             ContractResolver = new AstContractResolver(),
-            // TypeNameHandling = TypeNameHandling.All,
-            // TypeNameAssemblyFormatHandling = TypeNameAssemblyFormatHandling.Simple
         };
     }
 
@@ -262,6 +261,23 @@ public class Tests
         Compare(ast, ast2);
     }
 
+    [Test]
+    public void Test08_Block()
+    {
+        var src = """{ 2 + 123; { "456"; } } { }""";
+        var ast = new Parser(src).Parse();
+        var ast2 = new ProgramNode()
+        {
+            ProgramName = "Program",
+            Body = new INode[]
+            {
+                new LiteralNode(),
+            }
+        };
+        
+        Compare(ast, ast2);
+    }
+
     private void Compare(INode current, INode expected)
     {
         var json = ToJson(current);
@@ -272,12 +288,14 @@ public class Tests
         var splitB = expectedJson.Split('\n');
         var lines = Math.Max(splitA.Length, splitB.Length);
 
-        sb.AppendLine($"{"AST:",-50} | EXPECTED:");
+        const int alignment = -60;
+
+        sb.AppendLine($"{"AST:",alignment} | EXPECTED:");
         for (int i = 0; i < lines; i++)
         {
             var a = i >= splitA.Length ? " " : splitA[i];
             var b = i >= splitB.Length ? " " : splitB[i];
-            sb.AppendLine($"{a,-50} | {b}");
+            sb.AppendLine($"{a,alignment} | {b}");
         }
 
         Assert.That(
