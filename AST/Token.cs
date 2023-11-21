@@ -34,7 +34,7 @@ public class Token
 
         if (!string.IsNullOrEmpty(_content))
         {
-            return $"{Kind}: `{Value}`";
+            return $"{Kind}:'{Value}'";
         }
 
         return $"{Kind}";

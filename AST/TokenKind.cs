@@ -2,29 +2,36 @@ namespace AST;
 
 public enum TokenKind
 {
-    Unknown,
-    End,
-    WhiteSpace,
+    Unknown = '0',
+    End = '1',
+    WhiteSpace = ' ',
 
-    NumberLiteral,
+    NumberLiteral = 'n',
     PlusToken = '+',
     MinusToken = '-',
     MultiplyToken = '*',
     DivideToken = '/',
     
     AssignToken = '=',
-    EqualsToken,
 
     OpenParentheses = '(',
     CloseParentheses = ')',
     CommaToken = ',',
 
-    StringLiteral = 48,
+    StringLiteral = 's',
     Semicolon = ';',
 
     OpenCurlyBrace = '{',
     CloseCurlyBrace = '}',
 
-    VariableDeclarationToken,
-    Identifier,
+    VariableDeclarationToken = 'v',
+    Identifier = 'i',
+
+    IfToken = 'f',
+    ElseToken = 'e',
+
+    // Compare
+    EqualsToken = 'q',
+    GreaterToken = '<',
+    LessToken = '>',
 }

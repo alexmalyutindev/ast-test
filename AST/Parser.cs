@@ -45,8 +45,10 @@ namespace AST
             if (Current?.Kind != kind)
             {
                 throw new SyntaxError(
-                    $"Syntax error: Expected token `{kind}`, but current token: `{PeekNext}`\n" +
-                    "Tokens:\n " + String.Join("\n ", _tokens)
+                    $"Expected token `{kind}`, but current token: `{Current}`.\n" +
+                    "Tokens : " + String.Join(", ", _tokens),
+                    _content,
+                    Current!
                 );
             }
 
@@ -90,6 +92,7 @@ namespace AST
         /// : ExpressionStatement
         /// | BlockStatement
         /// | VariableStatement
+        /// | IfStatement
         /// ;
         private INode Statement()
         {
@@ -98,6 +101,7 @@ namespace AST
                 TokenKind.Semicolon => EmptyStatement(),
                 TokenKind.OpenCurlyBrace => BlockStatement(),
                 TokenKind.VariableDeclarationToken => VariableStatement(),
+                TokenKind.IfToken => IfStatement(),
                 _ => ExpressionStatement(),
             };
         }
@@ -126,6 +130,7 @@ namespace AST
 
             Eat(TokenKind.CloseCurlyBrace);
 
+            // TODO: BlockStatementNode
             return new StatementListNode()
             {
                 Children = body,
@@ -144,6 +149,34 @@ namespace AST
             return new VariableStatementNode()
             {
                 Declarations = declarations,
+            };
+        }
+
+        /// IfStatement
+        /// : 'if' '(' Expression ')' Statement
+        /// : 'if' '(' Expression ')' Statement 'else' Statement
+        /// ;
+        private INode IfStatement()
+        {
+            Eat(TokenKind.IfToken);
+            Eat(TokenKind.OpenParentheses);
+            var test = Expression();
+            Eat(TokenKind.CloseParentheses);
+
+            var consequent = Statement();
+
+            INode? alternate = null;
+            if (Current!.Kind == TokenKind.ElseToken)
+            {
+                Eat(TokenKind.ElseToken);
+                alternate = Statement();
+            }
+
+            return new IfStatementNode()
+            {
+                Test = test,
+                Consequent = consequent,
+                Alternate = alternate!,
             };
         }
 
@@ -216,12 +249,12 @@ namespace AST
         }
 
         /// AssignmentExpression
-        /// : AdditiveExpression
+        /// : RelationalExpression
         /// | LeftHandSideExpression AssignmentExpression AssignmentExpression
         /// ;
         private INode AssignmentExpression()
         {
-            var left = AdditiveExpression();
+            var left = RelationalExpression();
             if (Current!.Kind != TokenKind.AssignToken)
             {
                 return left;
@@ -255,6 +288,30 @@ namespace AST
             {
                 Token = Eat(TokenKind.Identifier),
             };
+        }
+
+        /// RelationalExpression
+        /// : AdditionalExpression
+        /// | AdditionalExpression RELATIONAL_OPERATOR RelationalExpression
+        /// ;
+        private INode RelationalExpression()
+        {
+            var left = AdditiveExpression();
+            
+            while (Current!.Kind is TokenKind.GreaterToken or TokenKind.LessToken or TokenKind.EqualsToken)
+            {
+                var op = Eat(Current.Kind);
+                var right = AdditiveExpression();
+
+                left = new BinaryExpressionNode()
+                {
+                    Token = op,
+                    Left = left,
+                    Right = right
+                };
+            }
+
+            return left;
         }
 
         /// AdditiveExpression
@@ -326,7 +383,11 @@ namespace AST
                     _content,
                     Current
                 ),
-                _ => throw new SyntaxError("PrimaryExpression parsing error!", _content, Current),
+                _ => throw new SyntaxError(
+                    "PrimaryExpression parsing error!\nTokens: " + String.Join(", ", _tokens),
+                    _content,
+                    Current
+                ),
             };
         }
 

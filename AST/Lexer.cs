@@ -4,25 +4,36 @@ namespace AST;
 
 public partial class Lexer
 {
+    public string Source => _content;
+
     private readonly string _content;
     private int _cursor;
 
     private readonly (Regex, TokenKind)[] _specs =
     {
         (WhiteSpace(), TokenKind.WhiteSpace),
+
+        // Separators
         (new Regex(@"\G\;", RegexOptions.Compiled), TokenKind.Semicolon),
-
-        (new Regex(@"\G\{", RegexOptions.Compiled), TokenKind.OpenCurlyBrace),
-        (new Regex(@"\G\}", RegexOptions.Compiled), TokenKind.CloseCurlyBrace),
-
-        (new Regex(@"\G\(", RegexOptions.Compiled), TokenKind.OpenParentheses),
-        (new Regex(@"\G\)", RegexOptions.Compiled), TokenKind.CloseParentheses),
         (new Regex(@"\G\,", RegexOptions.Compiled), TokenKind.CommaToken),
 
-        (new Regex(@"\G\==", RegexOptions.Compiled), TokenKind.EqualsToken),
+        // Parentheses
+        (new Regex(@"\G\{", RegexOptions.Compiled), TokenKind.OpenCurlyBrace),
+        (new Regex(@"\G\}", RegexOptions.Compiled), TokenKind.CloseCurlyBrace),
+        (new Regex(@"\G\(", RegexOptions.Compiled), TokenKind.OpenParentheses),
+        (new Regex(@"\G\)", RegexOptions.Compiled), TokenKind.CloseParentheses),
+
         (new Regex(@"\G\=", RegexOptions.Compiled), TokenKind.AssignToken),
 
+        // Compare
+        (new Regex(@"\G\==", RegexOptions.Compiled), TokenKind.EqualsToken),
+        (new Regex(@"\G\>", RegexOptions.Compiled), TokenKind.GreaterToken),
+        (new Regex(@"\G\<", RegexOptions.Compiled), TokenKind.LessToken),
+
+        // Keywords
         (new Regex(@"\G\bvar\b", RegexOptions.Compiled), TokenKind.VariableDeclarationToken),
+        (new Regex(@"\G\bif\b", RegexOptions.Compiled), TokenKind.IfToken),
+        (new Regex(@"\G\belse\b", RegexOptions.Compiled), TokenKind.ElseToken),
 
         // Numbers
         (NumberLiteral(), TokenKind.NumberLiteral),
@@ -65,7 +76,11 @@ public partial class Lexer
             return new Token(spec.Item2, new Range(start, _cursor), _content);
         }
 
-        return new Token(TokenKind.Unknown, new Range(_cursor, ++_cursor), _content);
+        throw new SyntaxError(
+            "Unknown token kind: ",
+            _content,
+            new Token(TokenKind.Unknown, new Range(_cursor, ++_cursor), _content)
+        );
     }
 
     [GeneratedRegex(@"\G\s+", RegexOptions.Compiled)]
