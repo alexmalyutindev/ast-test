@@ -17,6 +17,7 @@ public enum TokenKind
 
     OpenParentheses = '(',
     CloseParentheses = ')',
+    CommaToken = ',',
 
     StringLiteral = 48,
     Semicolon = ';',
@@ -24,6 +25,6 @@ public enum TokenKind
     OpenCurlyBrace = '{',
     CloseCurlyBrace = '}',
 
-    VariableDeclaration,
+    VariableDeclarationToken,
     Identifier,
 }

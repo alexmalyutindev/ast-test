@@ -28,9 +28,6 @@ public class SyntaxTests
     [TestCase("(2 + 2) * 2;")]
     [TestCase("(2);")]
     [TestCase("{ }")]
-    [TestCase("a = 2;")]
-    [TestCase("a = b = 2;")]
-    [TestCase("var a = 2;")]
     public void MathTests(string src)
     {
         var parser = new Parser(src);
@@ -39,4 +36,21 @@ public class SyntaxTests
         var json = JsonConvert.SerializeObject(root, _settings);
         Assert.Pass($"Source:\n{src}\nAST:\n{json}");
     }
+    
+    [TestCase("var a;")]
+    [TestCase("var a = 2;")]
+    [TestCase("var a, b = 2;")]
+    [TestCase("var a = 2, b = 2;")]
+    [TestCase("var a = b = 2;")]
+    [TestCase("a = 2;")]
+    [TestCase("a = b = 2;")]
+    public void VariableTests(string src)
+    {
+        var parser = new Parser(src);
+        var root = parser.Parse();
+
+        var json = JsonConvert.SerializeObject(root, _settings);
+        Assert.Pass($"Source:\n{src}\nAST:\n{json}");
+    }
+
 }

@@ -1,319 +1,399 @@
 using AST.Nodes;
 
-namespace AST;
+namespace AST.Nodes { }
 
-public class Parser
+namespace AST
 {
-    private readonly List<Token> _tokens;
-    private readonly string _content;
-    private int _cursor;
-
-    public Parser(string content)
+    public class Parser
     {
-        _content = content;
-        var lexer = new Lexer(_content);
+        private readonly List<Token> _tokens;
+        private readonly string _content;
+        private int _cursor;
 
-        _tokens = new List<Token>();
+        public Parser(string content)
         {
-            var token = lexer.Next();
-            while (token.Kind != TokenKind.End)
+            _content = content;
+            var lexer = new Lexer(_content);
+
+            _tokens = new List<Token>();
             {
-                if (token.Kind != TokenKind.WhiteSpace)
+                var token = lexer.Next();
+                while (token.Kind != TokenKind.End)
                 {
-                    _tokens.Add(token);
+                    if (token.Kind != TokenKind.WhiteSpace)
+                    {
+                        _tokens.Add(token);
+                    }
+
+                    token = lexer.Next();
                 }
 
-                token = lexer.Next();
+                _tokens.Add(token); // Add end token
+            }
+        }
+
+        private Token? Current => _cursor >= _tokens.Count ? null : _tokens[_cursor];
+        private Token? PeekNext => _cursor + 1 >= _tokens.Count ? null : _tokens[_cursor + 1];
+
+        private Token Eat(TokenKind kind)
+        {
+            if (Current == null)
+            {
+                throw new SyntaxError($"Syntax error: Current token is `NULL` at {_cursor}!");
             }
 
-            _tokens.Add(token); // Add end token
-        }
-    }
+            if (Current?.Kind != kind)
+            {
+                throw new SyntaxError(
+                    $"Syntax error: Expected token `{kind}`, but current token: `{PeekNext}`\n" +
+                    "Tokens:\n " + String.Join("\n ", _tokens)
+                );
+            }
 
-    private Token? Current => _cursor >= _tokens.Count ? null : _tokens[_cursor];
-    private Token? PeekNext => _cursor + 1 >= _tokens.Count ? null : _tokens[_cursor + 1];
-
-    private Token Eat(TokenKind kind)
-    {
-        if (Current == null)
-        {
-            throw new SyntaxError($"Syntax error: Current token is `NULL` at {_cursor}!");
+            return _tokens[_cursor++];
         }
 
-        if (Current?.Kind != kind)
+        public INode Parse()
         {
-            throw new SyntaxError(
-                $"Syntax error: Expected token `{kind}`, but current token: `{PeekNext}`\n" +
-                "Tokens:\n " + String.Join("\n ", _tokens)
-            );
+            return Program();
         }
 
-        return _tokens[_cursor++];
-    }
-
-    public INode Parse()
-    {
-        return Program();
-    }
-
-    /// Program
-    /// : StatementList
-    /// ;
-    private INode Program()
-    {
-        return new ProgramNode()
+        /// Program
+        /// : StatementList
+        /// ;
+        private INode Program()
         {
-            ProgramName = "Program",
-            Body = StatementList(),
-        };
-    }
-
-    /// StatementList
-    /// : Statement
-    /// | StatementList Statement
-    /// ;
-    private INode[] StatementList()
-    {
-        var statementList = new List<INode>() { Statement() };
-
-        while (Current!.Kind is not (TokenKind.End or TokenKind.CloseCurlyBrace))
-        {
-            statementList.Add(Statement());
+            return new ProgramNode()
+            {
+                ProgramName = "Program",
+                Body = StatementList(),
+            };
         }
 
-        return statementList.ToArray();
-    }
-
-    /// Statement
-    /// : ExpressionStatement
-    /// | BlockStatement
-    /// ;
-    private INode Statement()
-    {
-        return Current!.Kind switch
+        /// StatementList
+        /// : Statement
+        /// | StatementList Statement
+        /// ;
+        private INode[] StatementList()
         {
-            TokenKind.OpenCurlyBrace => BlockStatement(),
-            _ => ExpressionStatement(),
-        };
-    }
+            var statementList = new List<INode>() { Statement() };
 
-    /// BlockStatement
-    /// : '{' OptStatementList '}'
-    /// ;
-    private INode BlockStatement()
-    {
-        Eat(TokenKind.OpenCurlyBrace);
+            while (Current!.Kind is not (TokenKind.End or TokenKind.CloseCurlyBrace))
+            {
+                statementList.Add(Statement());
+            }
 
-        INode[] body = Current!.Kind switch
+            return statementList.ToArray();
+        }
+
+        /// Statement
+        /// : ExpressionStatement
+        /// | BlockStatement
+        /// | VariableStatement
+        /// ;
+        private INode Statement()
         {
-            TokenKind.CloseCurlyBrace => Array.Empty<INode>(),
-            _ => StatementList(),
-        };
+            return Current!.Kind switch
+            {
+                TokenKind.Semicolon => EmptyStatement(),
+                TokenKind.OpenCurlyBrace => BlockStatement(),
+                TokenKind.VariableDeclarationToken => VariableStatement(),
+                _ => ExpressionStatement(),
+            };
+        }
 
-        Eat(TokenKind.CloseCurlyBrace);
-
-        return new StatementListNode()
+        /// EmptyStatement
+        /// : ';'
+        /// ;
+        private INode EmptyStatement()
         {
-            Children = body,
-        };
-    }
+            Eat(TokenKind.Semicolon);
+            return new EmptyStatementNode();
+        }
 
-    /// ExpressionStatement
-    /// : Expression ';'
-    /// ;
-    private INode ExpressionStatement()
-    {
-        var expression = Expression();
-        Eat(TokenKind.Semicolon);
-
-        return new ExpressionStatementNode()
+        /// BlockStatement
+        /// : '{' OptStatementList '}'
+        /// ;
+        private INode BlockStatement()
         {
-            Expression = expression,
-        };
-    }
+            Eat(TokenKind.OpenCurlyBrace);
 
-    /// Expression
-    /// : AssignmentExpression
-    /// ;
-    private INode Expression()
-    {
-        return AssignmentExpression();
-    }
+            INode[] body = Current!.Kind switch
+            {
+                TokenKind.CloseCurlyBrace => Array.Empty<INode>(),
+                _ => StatementList(),
+            };
 
-    /// AssignmentExpression
-    /// : AdditiveExpression
-    /// | LeftHandSideExpression AssignmentExpression AssignmentExpression
-    /// ;
-    private INode AssignmentExpression()
-    {
-        var left = AdditiveExpression();
-        if (Current!.Kind != TokenKind.AssignToken)
+            Eat(TokenKind.CloseCurlyBrace);
+
+            return new StatementListNode()
+            {
+                Children = body,
+            };
+        }
+
+        /// VariableStatement
+        /// : 'var' VariableDeclarationList ';'
+        /// ;
+        private INode VariableStatement()
         {
+            Eat(TokenKind.VariableDeclarationToken);
+            var declarations = VariableDeclarationList();
+            Eat(TokenKind.Semicolon);
+
+            return new VariableStatementNode()
+            {
+                Declarations = declarations,
+            };
+        }
+
+        /// VariableDeclarationList
+        /// : VariableDeclaration
+        /// | VariableDeclarationList ',' VariableDeclaration
+        /// ;
+        private INode[] VariableDeclarationList()
+        {
+            var declarations = new List<INode>()
+            {
+                VariableDeclaration()
+            };
+
+            while (Current!.Kind == TokenKind.CommaToken)
+            {
+                Eat(TokenKind.CommaToken);
+                declarations.Add(VariableDeclaration());
+            }
+
+            return declarations.ToArray();
+        }
+
+        /// VariableDeclaration
+        /// : Identifier OptVariableInitializer
+        /// ;
+        private INode VariableDeclaration()
+        {
+            var identifier = Identifier();
+
+            var initializer = Current!.Kind is not (TokenKind.Semicolon or TokenKind.CommaToken)
+                ? VariableInitializer()
+                : null;
+
+            return new VariableDeclarationNode()
+            {
+                Identifier = identifier,
+                Initializer = initializer,
+            };
+        }
+
+        /// VariableInitializer
+        /// : '=' AssignmentExpression
+        private INode VariableInitializer()
+        {
+            Eat(TokenKind.AssignToken);
+            return AssignmentExpression();
+        }
+
+        /// ExpressionStatement
+        /// : Expression ';'
+        /// ;
+        private INode ExpressionStatement()
+        {
+            var expression = Expression();
+            Eat(TokenKind.Semicolon);
+
+            return new ExpressionStatementNode()
+            {
+                Expression = expression,
+            };
+        }
+
+        /// Expression
+        /// : AssignmentExpression
+        /// ;
+        private INode Expression()
+        {
+            return AssignmentExpression();
+        }
+
+        /// AssignmentExpression
+        /// : AdditiveExpression
+        /// | LeftHandSideExpression AssignmentExpression AssignmentExpression
+        /// ;
+        private INode AssignmentExpression()
+        {
+            var left = AdditiveExpression();
+            if (Current!.Kind != TokenKind.AssignToken)
+            {
+                return left;
+            }
+
+            var token = Eat(TokenKind.AssignToken);
+
+            return new AssignmentExpressionNode()
+            {
+                Token = token, // TODO: AssignmentOperator
+                Left = left as IdentifierNode ??
+                    throw new SyntaxError($"Invalid left-hand side expression: {left}!"),
+                Right = AssignmentExpression(),
+            };
+        }
+
+        /// LeftHandSideExpression
+        /// : Identifier
+        /// ;
+        private INode LeftHandSideExpression()
+        {
+            return Identifier();
+        }
+
+        /// Identifier
+        /// : IDENTIFIER
+        /// ;
+        private INode Identifier()
+        {
+            return new IdentifierNode()
+            {
+                Token = Eat(TokenKind.Identifier),
+            };
+        }
+
+        /// AdditiveExpression
+        /// : MultiplicativeExpression
+        /// | AdditiveExpression ADDITIVE_OPERATOR MultiplicativeExpression -> MultiplicativeExpression ADDITIVE_OPERATOR MultiplicativeExpression
+        /// ;
+        private INode AdditiveExpression()
+        {
+            var left = MultiplicativeExpression();
+
+            while (Current!.Kind is TokenKind.PlusToken or TokenKind.MinusToken)
+            {
+                var op = Eat(Current.Kind);
+                var right = MultiplicativeExpression();
+
+                left = new BinaryExpressionNode()
+                {
+                    Token = op,
+                    Left = left,
+                    Right = right
+                };
+            }
+
             return left;
         }
 
-        var token = Eat(TokenKind.AssignToken);
-
-        return new AssignmentExpressionNode()
+        /// MultiplicativeExpression
+        /// : PrimaryExpression
+        /// | MultiplicativeExpression MULTIPLICATIVE_OPERATOR PrimaryExpression -> PrimaryExpression MULTIPLICATIVE_OPERATOR PrimaryExpression
+        /// ;
+        private INode MultiplicativeExpression()
         {
-            Token = token, // TODO: AssignmentOperator
-            Left = left as IdentifierNode ??
-                throw new SyntaxError($"Invalid left-hand side expression: {left}!"),
-            Right = AssignmentExpression(),
-        };
-    }
+            var left = PrimaryExpression();
 
-    /// LeftHandSideExpression
-    /// : Identifier
-    /// ;
-    private INode LeftHandSideExpression()
-    {
-        return Identifier();
-    }
-
-    /// Identifier
-    /// : IDENTIFIER
-    /// ;
-    private INode Identifier()
-    {
-        return new IdentifierNode()
-        {
-            Token = Eat(TokenKind.Identifier),
-        };
-    }
-
-    /// AdditiveExpression
-    /// : MultiplicativeExpression
-    /// | AdditiveExpression ADDITIVE_OPERATOR MultiplicativeExpression -> MultiplicativeExpression ADDITIVE_OPERATOR MultiplicativeExpression
-    /// ;
-    private INode AdditiveExpression()
-    {
-        var left = MultiplicativeExpression();
-
-        while (Current!.Kind is TokenKind.PlusToken or TokenKind.MinusToken)
-        {
-            var op = Eat(Current.Kind);
-            var right = MultiplicativeExpression();
-
-            left = new BinaryExpressionNode()
+            while (Current!.Kind is TokenKind.MultiplyToken or TokenKind.DivideToken)
             {
-                Token = op,
-                Left = left,
-                Right = right
+                var op = Eat(Current.Kind);
+                var right = PrimaryExpression();
+
+                left = new BinaryExpressionNode()
+                {
+                    Token = op,
+                    Left = left,
+                    Right = right
+                };
+            }
+
+            return left;
+        }
+
+        /// PrimaryExpression
+        /// : Literal
+        /// | ParenthesizedExpression
+        /// | LeftHandSideExpression
+        /// ;
+        private INode PrimaryExpression()
+        {
+            if (Current!.Kind is TokenKind.NumberLiteral or TokenKind.StringLiteral)
+            {
+                return Literal();
+            }
+
+            return Current!.Kind switch
+            {
+                TokenKind.OpenParentheses => ParenthesizedExpression(),
+                TokenKind.Identifier => LeftHandSideExpression(),
+                TokenKind.VariableDeclarationToken => throw new SyntaxError(
+                    "TODO: VariableDeclaration",
+                    _content,
+                    Current
+                ),
+                _ => throw new SyntaxError("PrimaryExpression parsing error!", _content, Current),
             };
         }
 
-        return left;
-    }
-
-    /// MultiplicativeExpression
-    /// : PrimaryExpression
-    /// | MultiplicativeExpression MULTIPLICATIVE_OPERATOR PrimaryExpression -> PrimaryExpression MULTIPLICATIVE_OPERATOR PrimaryExpression
-    /// ;
-    private INode MultiplicativeExpression()
-    {
-        var left = PrimaryExpression();
-
-        while (Current!.Kind is TokenKind.MultiplyToken or TokenKind.DivideToken)
+        /// ParenthesizedExpression
+        /// : '(' Expression ')'
+        /// ;
+        private INode ParenthesizedExpression()
         {
-            var op = Eat(Current.Kind);
-            var right = PrimaryExpression();
+            Eat(TokenKind.OpenParentheses);
+            var expression = Expression();
+            Eat(TokenKind.CloseParentheses);
 
-            left = new BinaryExpressionNode()
+            return expression;
+        }
+
+        /// Literal
+        /// : NumericLiteral
+        /// | StringLiteral
+        /// ;
+        private INode Literal()
+        {
+            var token = Current!;
+
+            var node = token.Kind switch
             {
-                Token = op,
-                Left = left,
-                Right = right
+                TokenKind.NumberLiteral => NumberLiteral(),
+                TokenKind.StringLiteral => StringLiteral(),
+                _ => new LiteralNode { Token = token },
+            };
+
+            return node;
+        }
+
+        private INode StringLiteral()
+        {
+            return new LiteralNode()
+            {
+                Token = Eat(TokenKind.StringLiteral),
             };
         }
 
-        return left;
-    }
-
-    /// PrimaryExpression
-    /// : Literal
-    /// | ParenthesizedExpression
-    /// | LeftHandSideExpression
-    /// ;
-    private INode PrimaryExpression()
-    {
-        if (Current!.Kind is TokenKind.NumberLiteral or TokenKind.StringLiteral)
+        private INode NumberLiteral()
         {
-            return Literal();
+            var token = Eat(TokenKind.NumberLiteral);
+            return new LiteralNode
+            {
+                Token = token
+            };
         }
 
-        return Current!.Kind switch
+        private BinaryExpressionNode BinaryExpression()
         {
-            TokenKind.OpenParentheses => ParenthesizedExpression(),
-            TokenKind.Identifier => LeftHandSideExpression(),
-            TokenKind.VariableDeclaration => throw new SyntaxError("TODO: VariableDeclaration", _content, Current),
-            _ => throw new SyntaxError("PrimaryExpression parsing error!", _content, Current),
-        };
+            var token = Eat(TokenKind.PlusToken);
+            return new BinaryExpressionNode()
+            {
+                Token = token,
+                Right = NumberLiteral()
+            };
+        }
     }
 
-    /// ParenthesizedExpression
-    /// : '(' Expression ')'
-    /// ;
-    private INode ParenthesizedExpression()
+    internal class SyntaxError : Exception
     {
-        Eat(TokenKind.OpenParentheses);
-        var expression = Expression();
-        Eat(TokenKind.CloseParentheses);
+        public SyntaxError(string message) : base(message) { }
 
-        return expression;
+        public SyntaxError(string message, string src, Token token) : base(
+            message + $"\n{src}\n" + new string(' ', token.Location) + new string('^', token.Length)
+        ) { }
     }
-
-    /// Literal
-    /// : NumericLiteral
-    /// | StringLiteral
-    /// ;
-    private INode Literal()
-    {
-        var token = Current!;
-
-        var node = token.Kind switch
-        {
-            TokenKind.NumberLiteral => NumberLiteral(),
-            TokenKind.StringLiteral => StringLiteral(),
-            _ => new LiteralNode { Token = token },
-        };
-
-        return node;
-    }
-
-    private INode StringLiteral()
-    {
-        return new LiteralNode()
-        {
-            Token = Eat(TokenKind.StringLiteral),
-        };
-    }
-
-    private INode NumberLiteral()
-    {
-        var token = Eat(TokenKind.NumberLiteral);
-        return new LiteralNode
-        {
-            Token = token
-        };
-    }
-
-    private BinaryExpressionNode BinaryExpression()
-    {
-        var token = Eat(TokenKind.PlusToken);
-        return new BinaryExpressionNode()
-        {
-            Token = token,
-            Right = NumberLiteral()
-        };
-    }
-}
-
-internal class SyntaxError : Exception
-{
-    public SyntaxError(string message) : base(message) { }
-
-    public SyntaxError(string message, string src, Token token) : base(
-        message + $"\n{src}\n" + new string(' ', token.Location) + new string('^', token.Length)
-    ) { }
 }

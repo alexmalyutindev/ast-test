@@ -17,11 +17,12 @@ public partial class Lexer
 
         (new Regex(@"\G\(", RegexOptions.Compiled), TokenKind.OpenParentheses),
         (new Regex(@"\G\)", RegexOptions.Compiled), TokenKind.CloseParentheses),
+        (new Regex(@"\G\,", RegexOptions.Compiled), TokenKind.CommaToken),
 
         (new Regex(@"\G\==", RegexOptions.Compiled), TokenKind.EqualsToken),
         (new Regex(@"\G\=", RegexOptions.Compiled), TokenKind.AssignToken),
 
-        (new Regex(@"\Gvar", RegexOptions.Compiled), TokenKind.VariableDeclaration),
+        (new Regex(@"\G\bvar\b", RegexOptions.Compiled), TokenKind.VariableDeclarationToken),
 
         // Numbers
         (NumberLiteral(), TokenKind.NumberLiteral),
