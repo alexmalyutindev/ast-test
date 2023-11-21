@@ -10,7 +10,7 @@ namespace AST.Tests;
 public class Tests
 {
     private JsonSerializerSettings _settings = default!;
-    private readonly OtherTests _otherTests = new OtherTests();
+    private readonly SyntaxTests _syntaxTests = new SyntaxTests();
 
     [SetUp]
     public void Setup()

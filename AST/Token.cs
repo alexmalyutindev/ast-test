@@ -2,6 +2,9 @@ namespace AST;
 
 public class Token
 {
+    public int Location => _range.Start.Value;
+    public int Length => _range.End.Value - _range.Start.Value;
+
     public string Value => _content[_range];
     public TokenKind Kind { get; }
 

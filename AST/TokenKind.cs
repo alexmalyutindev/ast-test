@@ -25,5 +25,5 @@ public enum TokenKind
     CloseCurlyBrace = '}',
 
     VariableDeclaration,
-    Variable,
+    Identifier,
 }

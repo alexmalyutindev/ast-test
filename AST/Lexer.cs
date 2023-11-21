@@ -11,24 +11,29 @@ public partial class Lexer
     {
         (WhiteSpace(), TokenKind.WhiteSpace),
         (new Regex(@"\G\;", RegexOptions.Compiled), TokenKind.Semicolon),
-        
+
         (new Regex(@"\G\{", RegexOptions.Compiled), TokenKind.OpenCurlyBrace),
         (new Regex(@"\G\}", RegexOptions.Compiled), TokenKind.CloseCurlyBrace),
-        
+
+        (new Regex(@"\G\(", RegexOptions.Compiled), TokenKind.OpenParentheses),
+        (new Regex(@"\G\)", RegexOptions.Compiled), TokenKind.CloseParentheses),
+
+        (new Regex(@"\G\==", RegexOptions.Compiled), TokenKind.EqualsToken),
+        (new Regex(@"\G\=", RegexOptions.Compiled), TokenKind.AssignToken),
+
+        (new Regex(@"\Gvar", RegexOptions.Compiled), TokenKind.VariableDeclaration),
+
+        // Numbers
+        (NumberLiteral(), TokenKind.NumberLiteral),
+
+        (Identifier(), TokenKind.Identifier),
+
+        // Math
         (new Regex(@"\G\+", RegexOptions.Compiled), TokenKind.PlusToken),
         (new Regex(@"\G\-", RegexOptions.Compiled), TokenKind.MinusToken),
         (new Regex(@"\G\*", RegexOptions.Compiled), TokenKind.MultiplyToken),
         (new Regex(@"\G\/", RegexOptions.Compiled), TokenKind.DivideToken),
-        (new Regex(@"\G\(", RegexOptions.Compiled), TokenKind.OpenParentheses),
-        (new Regex(@"\G\)", RegexOptions.Compiled), TokenKind.CloseParentheses),
-        
-        (new Regex(@"\G\==", RegexOptions.Compiled), TokenKind.EqualsToken),
-        (new Regex(@"\G\=", RegexOptions.Compiled), TokenKind.AssignToken),
-        
-        (new Regex(@"\Gvar", RegexOptions.Compiled), TokenKind.VariableDeclaration),
-        (Variable(), TokenKind.Variable),
-        
-        (NumberLiteral(), TokenKind.NumberLiteral),
+
         (StringLiteral(), TokenKind.StringLiteral),
     };
 
@@ -70,6 +75,7 @@ public partial class Lexer
 
     [GeneratedRegex("\"(.*?)\"", RegexOptions.Compiled)]
     private static partial Regex StringLiteral();
+
     [GeneratedRegex(@"\G[a-zA-Z_@][\w]*", RegexOptions.Compiled)]
-    private static partial Regex Variable();
+    private static partial Regex Identifier();
 }

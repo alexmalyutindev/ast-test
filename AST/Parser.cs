@@ -123,21 +123,63 @@ public class Parser
     /// ;
     private INode ExpressionStatement()
     {
-        var expression = new ExpressionStatementNode()
-        {
-            Expression = Expression()
-        };
-
+        var expression = Expression();
         Eat(TokenKind.Semicolon);
-        return expression;
+
+        return new ExpressionStatementNode()
+        {
+            Expression = expression,
+        };
     }
 
     /// Expression
-    /// : AdditiveExpression
+    /// : AssignmentExpression
     /// ;
     private INode Expression()
     {
-        return AdditiveExpression();
+        return AssignmentExpression();
+    }
+
+    /// AssignmentExpression
+    /// : AdditiveExpression
+    /// | LeftHandSideExpression AssignmentExpression AssignmentExpression
+    /// ;
+    private INode AssignmentExpression()
+    {
+        var left = AdditiveExpression();
+        if (Current!.Kind != TokenKind.AssignToken)
+        {
+            return left;
+        }
+
+        var token = Eat(TokenKind.AssignToken);
+
+        return new AssignmentExpressionNode()
+        {
+            Token = token, // TODO: AssignmentOperator
+            Left = left as IdentifierNode ??
+                throw new SyntaxError($"Invalid left-hand side expression: {left}!"),
+            Right = AssignmentExpression(),
+        };
+    }
+
+    /// LeftHandSideExpression
+    /// : Identifier
+    /// ;
+    private INode LeftHandSideExpression()
+    {
+        return Identifier();
+    }
+
+    /// Identifier
+    /// : IDENTIFIER
+    /// ;
+    private INode Identifier()
+    {
+        return new IdentifierNode()
+        {
+            Token = Eat(TokenKind.Identifier),
+        };
     }
 
     /// AdditiveExpression
@@ -164,7 +206,6 @@ public class Parser
         return left;
     }
 
-
     /// MultiplicativeExpression
     /// : PrimaryExpression
     /// | MultiplicativeExpression MULTIPLICATIVE_OPERATOR PrimaryExpression -> PrimaryExpression MULTIPLICATIVE_OPERATOR PrimaryExpression
@@ -190,15 +231,23 @@ public class Parser
     }
 
     /// PrimaryExpression
-    /// : ParenthesizedExpression
-    /// | Literal
+    /// : Literal
+    /// | ParenthesizedExpression
+    /// | LeftHandSideExpression
     /// ;
     private INode PrimaryExpression()
     {
+        if (Current!.Kind is TokenKind.NumberLiteral or TokenKind.StringLiteral)
+        {
+            return Literal();
+        }
+
         return Current!.Kind switch
         {
             TokenKind.OpenParentheses => ParenthesizedExpression(),
-            _ => Literal()
+            TokenKind.Identifier => LeftHandSideExpression(),
+            TokenKind.VariableDeclaration => throw new SyntaxError("TODO: VariableDeclaration", _content, Current),
+            _ => throw new SyntaxError("PrimaryExpression parsing error!", _content, Current),
         };
     }
 
@@ -263,4 +312,8 @@ public class Parser
 internal class SyntaxError : Exception
 {
     public SyntaxError(string message) : base(message) { }
+
+    public SyntaxError(string message, string src, Token token) : base(
+        message + $"\n{src}\n" + new string(' ', token.Location) + new string('^', token.Length)
+    ) { }
 }
