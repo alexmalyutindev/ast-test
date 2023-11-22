@@ -1,3 +1,4 @@
+using System.Text;
 using AST.Nodes;
 
 namespace AST.Nodes { }
@@ -222,7 +223,7 @@ namespace AST
         /// : '=' AssignmentExpression
         private INode VariableInitializer()
         {
-            Eat(TokenKind.AssignToken);
+            Eat(TokenKind.SimpleAssign);
             return AssignmentExpression();
         }
 
@@ -249,26 +250,27 @@ namespace AST
         }
 
         /// AssignmentExpression
-        /// : RelationalExpression
-        /// | LeftHandSideExpression AssignmentExpression AssignmentExpression
+        /// : LogicalOrExpression
+        /// | LeftHandSideExpression AssignmentOperator AssignmentExpression
         /// ;
         private INode AssignmentExpression()
         {
-            var left = RelationalExpression();
-            if (Current!.Kind != TokenKind.AssignToken)
+            var left = LogicalOrExpression();
+
+            if (Current!.Kind is TokenKind.SimpleAssign or TokenKind.ComplexAssign)
             {
-                return left;
+                var token = Eat(Current!.Kind);
+
+                return new AssignmentExpressionNode()
+                {
+                    Token = token, // TODO: AssignmentOperator
+                    Left = left as IdentifierNode ??
+                        throw new SyntaxError($"Invalid left-hand side expression: {left}!"),
+                    Right = AssignmentExpression(),
+                };
             }
 
-            var token = Eat(TokenKind.AssignToken);
-
-            return new AssignmentExpressionNode()
-            {
-                Token = token, // TODO: AssignmentOperator
-                Left = left as IdentifierNode ??
-                    throw new SyntaxError($"Invalid left-hand side expression: {left}!"),
-                Right = AssignmentExpression(),
-            };
+            return left;
         }
 
         /// LeftHandSideExpression
@@ -290,6 +292,34 @@ namespace AST
             };
         }
 
+        /// LogicalOrExpression
+        /// : LogicalAndExpression LOGICAL_OR LogicalOrExpression
+        /// | LogicalAndExpression
+        /// ;
+        private INode LogicalOrExpression()
+        {
+            return LogicalExpression(TokenKind.LogicalOr, LogicalAndExpression);
+        }
+        
+        /// LogicalAndExpression
+        /// : EqualityExpression LOGICAL_AND LogicalAndExpression
+        /// | EqualityExpression
+        /// ;
+        private INode LogicalAndExpression()
+        {
+            return LogicalExpression(TokenKind.LogicalAnd, EqualityExpression);
+        }
+
+        /// EQUALITY_OPERATOR: '==', '!='
+        /// EqualityExpression
+        /// : RelationalExpression EQUALITY_OPERATOR EqualityExpression
+        /// | RelationalExpression
+        /// ;
+        private INode EqualityExpression()
+        {
+            return BinaryExpression(TokenKind.EqualityOperator, RelationalExpression);
+        }
+
         /// RelationalExpression
         /// : AdditionalExpression
         /// | AdditionalExpression RELATIONAL_OPERATOR RelationalExpression
@@ -297,8 +327,8 @@ namespace AST
         private INode RelationalExpression()
         {
             var left = AdditiveExpression();
-            
-            while (Current!.Kind is TokenKind.GreaterToken or TokenKind.LessToken or TokenKind.EqualsToken)
+
+            while (Current!.Kind is TokenKind.GreaterToken or TokenKind.LessToken or TokenKind.EqualityOperator)
             {
                 var op = Eat(Current.Kind);
                 var right = AdditiveExpression();
@@ -316,7 +346,7 @@ namespace AST
 
         /// AdditiveExpression
         /// : MultiplicativeExpression
-        /// | AdditiveExpression ADDITIVE_OPERATOR MultiplicativeExpression -> MultiplicativeExpression ADDITIVE_OPERATOR MultiplicativeExpression
+        /// | AdditiveExpression ADDITIVE_OPERATOR MultiplicativeExpression
         /// ;
         private INode AdditiveExpression()
         {
@@ -369,7 +399,7 @@ namespace AST
         /// ;
         private INode PrimaryExpression()
         {
-            if (Current!.Kind is TokenKind.NumberLiteral or TokenKind.StringLiteral)
+            if (Current!.Kind is TokenKind.NumberLiteral or TokenKind.StringLiteral or TokenKind.BooleanLiteral)
             {
                 return Literal();
             }
@@ -406,16 +436,18 @@ namespace AST
         /// Literal
         /// : NumericLiteral
         /// | StringLiteral
+        /// | BooleanLiteral
+        /// | NullLiteral
         /// ;
         private INode Literal()
         {
-            var token = Current!;
-
-            var node = token.Kind switch
+            var node = Current!.Kind switch
             {
                 TokenKind.NumberLiteral => NumberLiteral(),
                 TokenKind.StringLiteral => StringLiteral(),
-                _ => new LiteralNode { Token = token },
+                TokenKind.BooleanLiteral => BooleanLiteral(),
+                TokenKind.NullLiteral => NullLiteral(),
+                _ => throw new SyntaxError($"Expected literal but get: {Current}", _content, Current),
             };
 
             return node;
@@ -444,17 +476,66 @@ namespace AST
             };
         }
 
+        /// BooleanLiteral
+        /// : BOOL
+        /// ;
+        private INode BooleanLiteral()
+        {
+            var token = Current!.Kind switch
+            {
+                TokenKind.BooleanLiteral => Eat(TokenKind.BooleanLiteral),
+                _ => throw new SyntaxError($"Expected boolean literal but get {Current}", _content, Current),
+            };
+
+            return new LiteralNode
+            {
+                Token = token
+            };
+        }
+
+        /// NullLiteral
+        /// : NULL
+        /// ;
+        private INode NullLiteral()
+        {
+            var token = Eat(TokenKind.NullLiteral);
+            return new LiteralNode
+            {
+                Token = token
+            };
+        }
+
         // TODO: Group operators
-        private INode BinaryExpression(/* TokenKind operator, */ Func<INode> expression)
+        private INode BinaryExpression(TokenKind token, Func<INode> expression)
         {
             var left = expression();
-            
-            while (Current!.Kind is TokenKind.GreaterToken or TokenKind.LessToken or TokenKind.EqualsToken)
+
+            while (Current!.Kind == token)
             {
                 var op = Eat(Current.Kind);
                 var right = expression();
 
                 left = new BinaryExpressionNode()
+                {
+                    Token = op,
+                    Left = left,
+                    Right = right
+                };
+            }
+
+            return left;
+        }
+        
+        private INode LogicalExpression(TokenKind token, Func<INode> expression)
+        {
+            var left = expression();
+
+            while (Current!.Kind == token)
+            {
+                var op = Eat(Current.Kind);
+                var right = expression();
+
+                left = new LogicalExpressionNode()
                 {
                     Token = op,
                     Left = left,
@@ -471,7 +552,17 @@ namespace AST
         public SyntaxError(string message) : base(message) { }
 
         public SyntaxError(string message, string src, Token token) : base(
-            message + $"\n{src}\n" + new string(' ', token.Location) + new string('^', token.Length)
+            message + '\n' + GetErrorLine(src, token)
         ) { }
+
+        private static string GetErrorLine(string src, Token token)
+        {
+            // TODO: Add multiline support!
+            var sb = new StringBuilder()
+                .AppendLine(src)
+                .Append(new string(' ', token.Location)).Append('~', token.Length)
+                .AppendLine();
+            return sb.ToString();
+        }
     }
 }

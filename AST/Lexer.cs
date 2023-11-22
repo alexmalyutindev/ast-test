@@ -23,18 +23,28 @@ public partial class Lexer
         (new Regex(@"\G\(", RegexOptions.Compiled), TokenKind.OpenParentheses),
         (new Regex(@"\G\)", RegexOptions.Compiled), TokenKind.CloseParentheses),
 
-        (new Regex(@"\G\=", RegexOptions.Compiled), TokenKind.AssignToken),
-
         // Compare
-        (new Regex(@"\G\==", RegexOptions.Compiled), TokenKind.EqualsToken),
+        (new Regex(@"\G[=!]=", RegexOptions.Compiled), TokenKind.EqualityOperator),
         (new Regex(@"\G\>", RegexOptions.Compiled), TokenKind.GreaterToken),
         (new Regex(@"\G\<", RegexOptions.Compiled), TokenKind.LessToken),
         // TODO: Add '<=', '>='
+        
+        // Logical
+        (new Regex(@"\G\&\&", RegexOptions.Compiled), TokenKind.LogicalAnd),
+        (new Regex(@"\G\|\|", RegexOptions.Compiled), TokenKind.LogicalOr),
+
+        
+        (new Regex(@"\G\=", RegexOptions.Compiled), TokenKind.SimpleAssign),
+        (new Regex(@"\G[\+\-\*\/]=", RegexOptions.Compiled), TokenKind.ComplexAssign), // '+=', '-=', '*=', '/='
 
         // Keywords
         (new Regex(@"\G\bvar\b", RegexOptions.Compiled), TokenKind.VariableDeclarationToken),
         (new Regex(@"\G\bif\b", RegexOptions.Compiled), TokenKind.IfToken),
         (new Regex(@"\G\belse\b", RegexOptions.Compiled), TokenKind.ElseToken),
+
+        (new Regex(@"\G\btrue\b", RegexOptions.Compiled), TokenKind.BooleanLiteral),
+        (new Regex(@"\G\bfalse\b", RegexOptions.Compiled), TokenKind.BooleanLiteral),
+        (new Regex(@"\G\bnull\b", RegexOptions.Compiled), TokenKind.NullLiteral),
 
         // Numbers
         (NumberLiteral(), TokenKind.NumberLiteral),
@@ -46,7 +56,6 @@ public partial class Lexer
         (new Regex(@"\G\-", RegexOptions.Compiled), TokenKind.MinusToken),
         (new Regex(@"\G\*", RegexOptions.Compiled), TokenKind.MultiplyToken),
         (new Regex(@"\G\/", RegexOptions.Compiled), TokenKind.DivideToken),
-        // TODO: Add '+=', '-=', '*=', '/='
 
         (StringLiteral(), TokenKind.StringLiteral),
     };
@@ -88,7 +97,7 @@ public partial class Lexer
     [GeneratedRegex(@"\G\s+", RegexOptions.Compiled)]
     private static partial Regex WhiteSpace();
 
-    [GeneratedRegex(@"\G\d+", RegexOptions.Compiled)]
+    [GeneratedRegex(@"\G-?\d+", RegexOptions.Compiled)]
     private static partial Regex NumberLiteral();
 
     [GeneratedRegex("\"(.*?)\"", RegexOptions.Compiled)]

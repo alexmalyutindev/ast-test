@@ -2,23 +2,37 @@ namespace AST;
 
 public enum TokenKind
 {
-    Unknown = '0',
-    End = '1',
+    Unknown = 0,
+    End,
+
+    // Keywords
+    IfToken,
+    ElseToken,
+
+    SimpleAssign,
+    ComplexAssign,
+    
+    // Literals
+    NumberLiteral,
+    BooleanLiteral,
+    StringLiteral,
+    NullLiteral,
+
+    // Logical
+    LogicalAnd,
+    LogicalOr,
+    
     WhiteSpace = ' ',
 
-    NumberLiteral = 'n',
     PlusToken = '+',
     MinusToken = '-',
     MultiplyToken = '*',
     DivideToken = '/',
-    
-    AssignToken = '=',
 
     OpenParentheses = '(',
     CloseParentheses = ')',
     CommaToken = ',',
 
-    StringLiteral = 's',
     Semicolon = ';',
 
     OpenCurlyBrace = '{',
@@ -27,11 +41,7 @@ public enum TokenKind
     VariableDeclarationToken = 'v',
     Identifier = 'i',
 
-    IfToken = 'f',
-    ElseToken = 'e',
-
-    // Compare
-    EqualsToken = 'q',
+    EqualityOperator = 'q',
     GreaterToken = '<',
     LessToken = '>',
 }

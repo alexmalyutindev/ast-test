@@ -57,4 +57,15 @@ public class SyntaxTests
     [TestCase("a + 5 > 0;")]
     [TestCase("a = b + 5 > 0;")]
     public void RelationalTests(string src) => GenericSyntaxTest(src);
+    
+    [TestCase("a == b;")]
+    [TestCase("a != b;")]
+    [TestCase("a == true;")]
+    [TestCase("a + 5 < b == true;")]
+    public void EqualityOperatorTests(string src) => GenericSyntaxTest(src);
+    
+    [TestCase("a < -1 && a > 1;")]
+    [TestCase("a && b || c;")]
+    [TestCase("a || b && c;")]
+    public void LogicalOperatorTests(string src) => GenericSyntaxTest(src);
 }
