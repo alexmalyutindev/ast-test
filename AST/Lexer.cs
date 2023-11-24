@@ -32,6 +32,7 @@ public partial class Lexer
         // Logical
         (new Regex(@"\G\&\&", RegexOptions.Compiled), TokenKind.LogicalAnd),
         (new Regex(@"\G\|\|", RegexOptions.Compiled), TokenKind.LogicalOr),
+        (new Regex(@"\G\!", RegexOptions.Compiled), TokenKind.LogicalNot),
 
         
         (new Regex(@"\G\=", RegexOptions.Compiled), TokenKind.SimpleAssign),

@@ -263,22 +263,18 @@ namespace AST
 
                 return new AssignmentExpressionNode()
                 {
-                    Token = token, // TODO: AssignmentOperator
+                    Token = token,
                     Left = left as IdentifierNode ??
-                        throw new SyntaxError($"Invalid left-hand side expression: {left}!"),
+                        throw new SyntaxError(
+                            $"Invalid left-hand side expression: {left.Name}!\nTokens: " + String.Join(", ", _tokens),
+                            _content,
+                            Current
+                        ),
                     Right = AssignmentExpression(),
                 };
             }
 
             return left;
-        }
-
-        /// LeftHandSideExpression
-        /// : Identifier
-        /// ;
-        private INode LeftHandSideExpression()
-        {
-            return Identifier();
         }
 
         /// Identifier
@@ -300,7 +296,7 @@ namespace AST
         {
             return LogicalExpression(TokenKind.LogicalOr, LogicalAndExpression);
         }
-        
+
         /// LogicalAndExpression
         /// : EqualityExpression LOGICAL_AND LogicalAndExpression
         /// | EqualityExpression
@@ -317,7 +313,7 @@ namespace AST
         /// ;
         private INode EqualityExpression()
         {
-            return BinaryExpression(TokenKind.EqualityOperator, RelationalExpression);
+            return BinaryExpression(RelationalExpression, TokenKind.EqualityOperator);
         }
 
         /// RelationalExpression
@@ -350,56 +346,63 @@ namespace AST
         /// ;
         private INode AdditiveExpression()
         {
-            var left = MultiplicativeExpression();
-
-            while (Current!.Kind is TokenKind.PlusToken or TokenKind.MinusToken)
-            {
-                var op = Eat(Current.Kind);
-                var right = MultiplicativeExpression();
-
-                left = new BinaryExpressionNode()
-                {
-                    Token = op,
-                    Left = left,
-                    Right = right
-                };
-            }
-
-            return left;
+            return BinaryExpression(MultiplicativeExpression, TokenKind.PlusToken, TokenKind.MinusToken);
         }
 
         /// MultiplicativeExpression
-        /// : PrimaryExpression
-        /// | MultiplicativeExpression MULTIPLICATIVE_OPERATOR PrimaryExpression -> PrimaryExpression MULTIPLICATIVE_OPERATOR PrimaryExpression
+        /// : UnaryExpression
+        /// | UnaryExpression MULTIPLICATIVE_OPERATOR UnaryExpression
         /// ;
         private INode MultiplicativeExpression()
         {
-            var left = PrimaryExpression();
+            return BinaryExpression(UnaryExpression, TokenKind.MultiplyToken, TokenKind.DivideToken);
+        }
 
-            while (Current!.Kind is TokenKind.MultiplyToken or TokenKind.DivideToken)
+        /// UnaryExpression
+        /// : LeftHandSideExpression
+        /// | ADDITIVE_OPERATOR UnaryExpression
+        /// | LOGICAL_NOT UnaryExpression
+        /// ;
+        private INode UnaryExpression()
+        {
+            var op = Current!.Kind switch
             {
-                var op = Eat(Current.Kind);
-                var right = PrimaryExpression();
+                // TODO: Combine to ADDITIVE_OPERATOR
+                TokenKind.PlusToken => Eat(TokenKind.PlusToken),
+                TokenKind.MinusToken => Eat(TokenKind.MinusToken),
 
-                left = new BinaryExpressionNode()
+                TokenKind.LogicalNot => Eat(TokenKind.LogicalNot),
+                _ => null,
+            };
+
+            if (op != null)
+            {
+                return new UnaryExpressionNode()
                 {
                     Token = op,
-                    Left = left,
-                    Right = right
+                    Argument = UnaryExpression(),
                 };
             }
 
-            return left;
+            return LeftHandSideExpression();
+        }
+
+        /// LeftHandSideExpression
+        /// : PrimaryExpression
+        /// ;
+        private INode LeftHandSideExpression()
+        {
+            return PrimaryExpression();
         }
 
         /// PrimaryExpression
         /// : Literal
         /// | ParenthesizedExpression
-        /// | LeftHandSideExpression
+        /// | Identifier
         /// ;
         private INode PrimaryExpression()
         {
-            if (Current!.Kind is TokenKind.NumberLiteral or TokenKind.StringLiteral or TokenKind.BooleanLiteral)
+            if (IsLiteral())
             {
                 return Literal();
             }
@@ -407,12 +410,7 @@ namespace AST
             return Current!.Kind switch
             {
                 TokenKind.OpenParentheses => ParenthesizedExpression(),
-                TokenKind.Identifier => LeftHandSideExpression(),
-                TokenKind.VariableDeclarationToken => throw new SyntaxError(
-                    "TODO: VariableDeclaration",
-                    _content,
-                    Current
-                ),
+                TokenKind.Identifier => Identifier(),
                 _ => throw new SyntaxError(
                     "PrimaryExpression parsing error!\nTokens: " + String.Join(", ", _tokens),
                     _content,
@@ -506,11 +504,11 @@ namespace AST
         }
 
         // TODO: Group operators
-        private INode BinaryExpression(TokenKind token, Func<INode> expression)
+        private INode BinaryExpression(Func<INode> expression, params TokenKind[] tokens)
         {
             var left = expression();
 
-            while (Current!.Kind == token)
+            while (Array.FindIndex(tokens, tokenKind => tokenKind == Current!.Kind) >= 0)
             {
                 var op = Eat(Current.Kind);
                 var right = expression();
@@ -525,7 +523,7 @@ namespace AST
 
             return left;
         }
-        
+
         private INode LogicalExpression(TokenKind token, Func<INode> expression)
         {
             var left = expression();
@@ -544,6 +542,11 @@ namespace AST
             }
 
             return left;
+        }
+
+        private bool IsLiteral()
+        {
+            return Current!.Kind is TokenKind.NumberLiteral or TokenKind.StringLiteral or TokenKind.BooleanLiteral;
         }
     }
 

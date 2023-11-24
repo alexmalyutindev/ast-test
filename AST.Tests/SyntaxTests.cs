@@ -68,4 +68,10 @@ public class SyntaxTests
     [TestCase("a && b || c;")]
     [TestCase("a || b && c;")]
     public void LogicalOperatorTests(string src) => GenericSyntaxTest(src);
+
+    [TestCase("!a;")]
+    [TestCase("--a;")]
+    [TestCase("a = b = -c;")]
+    [TestCase("+a * -b;")]
+    public void UnaryExpressionTest(string src) => GenericSyntaxTest(src);
 }

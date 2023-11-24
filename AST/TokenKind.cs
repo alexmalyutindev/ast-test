@@ -19,8 +19,9 @@ public enum TokenKind
     NullLiteral,
 
     // Logical
-    LogicalAnd,
-    LogicalOr,
+    LogicalAnd, // '&&'
+    LogicalOr,  // '||'
+    LogicalNot, // '!'
     
     WhiteSpace = ' ',
 
