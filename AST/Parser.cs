@@ -1,8 +1,6 @@
 using System.Text;
 using AST.Nodes;
 
-namespace AST.Nodes { }
-
 namespace AST
 {
     public class Parser
@@ -123,7 +121,7 @@ namespace AST
         {
             Eat(TokenKind.OpenCurlyBrace);
 
-            INode[] body = Current!.Kind switch
+            var body = Current!.Kind switch
             {
                 TokenKind.CloseCurlyBrace => Array.Empty<INode>(),
                 _ => StatementList(),
@@ -215,7 +213,7 @@ namespace AST
             return new VariableDeclarationNode()
             {
                 Identifier = identifier,
-                Initializer = initializer,
+                Initializer = initializer!,
             };
         }
 
@@ -510,7 +508,7 @@ namespace AST
 
             while (Array.FindIndex(tokens, tokenKind => tokenKind == Current!.Kind) >= 0)
             {
-                var op = Eat(Current.Kind);
+                var op = Eat(Current!.Kind);
                 var right = expression();
 
                 left = new BinaryExpressionNode()
