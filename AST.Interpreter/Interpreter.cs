@@ -6,6 +6,7 @@ public class Interpreter
 {
     public readonly Stack<int> Stack = new();
     public readonly Stack<string> StringStack = new();
+    public readonly Dictionary<string, object> Variables = new();
 
     private readonly Parser _parser;
     private readonly INode _ast;
@@ -39,7 +40,31 @@ public class Interpreter
             case ExpressionStatementNode exp:
                 Eval(exp.Expression);
                 break;
+            case VariableStatementNode variableDeclarationNode:
+                VariableDeclaration(variableDeclarationNode);
+                break;
         }
+    }
+
+    private void VariableDeclaration(VariableStatementNode node)
+    {
+        foreach (VariableDeclarationNode declaration in node.Declarations)
+        {
+            var id = declaration.Identifier as IdentifierNode;
+            Variables[id!.Token.Value] = declaration.Initializer switch
+            {
+                LiteralNode l => l.Token.Kind == TokenKind.NumberLiteral ? int.Parse(l.Token.Value) : l.Token.Value,
+                ExpressionStatementNode exp => EvalPop(exp),
+                BinaryExpressionNode exp => EvalPop(exp),
+                _ => 0,
+            };
+        }
+    }
+
+    private object EvalPop(INode exp)
+    {
+        Eval(exp);
+        return Stack.Pop();
     }
 
     private void EvalBinary(BinaryExpressionNode binaryExpressionNode)
@@ -58,6 +83,9 @@ public class Interpreter
                 else
                     StringStack.Push(n.Token.Value);
                 break;
+            case IdentifierNode id:
+                Stack.Push((int) Variables[id.Token.Value]);
+                break;
         }
 
         switch (binaryExpressionNode.Right)
@@ -68,9 +96,12 @@ public class Interpreter
             case LiteralNode n:
                 type = n.Token.Kind;
                 if (n.Token.Kind == TokenKind.NumberLiteral)
-                    Stack.Push(Int32.Parse(n.Token.Value));
+                    Stack.Push(int.Parse(n.Token.Value));
                 else
                     StringStack.Push(n.Token.Value);
+                break;
+            case IdentifierNode id:
+                Stack.Push((int) Variables[id.Token.Value]);
                 break;
         }
 
