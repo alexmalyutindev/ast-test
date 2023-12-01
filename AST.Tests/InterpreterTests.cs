@@ -4,7 +4,7 @@ namespace AST.Tests;
 
 public class InterpreterTests
 {
-    // [Test]
+    [Test]
     public void Test0()
     {
         var src = """
@@ -15,8 +15,30 @@ public class InterpreterTests
                   """;
 
         var interpreter = new Interpreter.Interpreter(src);
-        
+
         interpreter.Run();
+
+        Assert.That(
+            interpreter.Stack.Reverse().ToArray(),
+            Is.EqualTo(
+                new IComparable[]
+                {
+                    45 + 25 - 1,
+                    2 + 2 * 2,
+                    (2 + 2) * 2,
+                }
+            )
+        );
+
+        Assert.That(
+            interpreter.StringStack.Reverse().ToArray(),
+            Is.EqualTo(
+                new IComparable[]
+                {
+                    "abc" + "def",
+                }
+            )
+        );
         
         var sb = new StringBuilder()
             .AppendLine(">Source:")
@@ -25,7 +47,7 @@ public class InterpreterTests
             .Append(String.Join(" | ", interpreter.Stack)).AppendLine("]")
             .AppendLine(">StringStack:").Append('[')
             .Append(String.Join(", ", interpreter.StringStack)).AppendLine("]");
-
+        
         Console.WriteLine(sb);
     }
 }

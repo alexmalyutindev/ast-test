@@ -78,10 +78,18 @@ public class Interpreter
                 break;
             case LiteralNode n:
                 type = n.Token.Kind;
-                if (n.Token.Kind == TokenKind.NumberLiteral)
-                    Stack.Push(Int32.Parse(n.Token.Value));
-                else
-                    StringStack.Push(n.Token.Value);
+                switch (n.Token.Kind)
+                {
+                    case TokenKind.NumberLiteral:
+                        Stack.Push(int.Parse(n.Token.Value));
+                        break;
+                    case TokenKind.StringLiteral:
+                        StringStack.Push(n.Token.Value[1..^1]);
+                        break;
+                    default:
+                        throw new Exception($"Not supported Literal: {n.Token.Kind}");
+                }
+
                 break;
             case IdentifierNode id:
                 Stack.Push((int) Variables[id.Token.Value]);
@@ -95,10 +103,18 @@ public class Interpreter
                 break;
             case LiteralNode n:
                 type = n.Token.Kind;
-                if (n.Token.Kind == TokenKind.NumberLiteral)
-                    Stack.Push(int.Parse(n.Token.Value));
-                else
-                    StringStack.Push(n.Token.Value);
+                switch (n.Token.Kind)
+                {
+                    case TokenKind.NumberLiteral:
+                        Stack.Push(int.Parse(n.Token.Value));
+                        break;
+                    case TokenKind.StringLiteral:
+                        StringStack.Push(n.Token.Value[1..^1]);
+                        break;
+                    default:
+                        throw new Exception($"Not supported Literal: {n.Token.Kind}");
+                }
+
                 break;
             case IdentifierNode id:
                 Stack.Push((int) Variables[id.Token.Value]);
@@ -116,7 +132,7 @@ public class Interpreter
                 case TokenKind.MinusToken:
                     Stack.Push(left - right);
                     break;
-                
+
                 case TokenKind.MultiplyToken:
                     Stack.Push(left * right);
                     break;
@@ -128,7 +144,8 @@ public class Interpreter
         }
         else
         {
-            StringStack.Push(StringStack.Pop() + StringStack.Pop());
+            var (right, left) = (StringStack.Pop(), StringStack.Pop());
+            StringStack.Push(left + right);
         }
     }
 }
