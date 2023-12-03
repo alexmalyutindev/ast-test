@@ -156,28 +156,26 @@ public class Tests
             {
                 new ExpressionStatementNode()
                 {
-                    Expression = new BinaryExpressionNode()
-                    {
-                        Token = new Token(TokenKind.AdditiveOperator, new Range(6, 7), src),
-                        Operator = BinaryOperator.Minus,
-                        Left = new BinaryExpressionNode()
-                        {
-                            Token = new Token(TokenKind.AdditiveOperator, new Range(2, 3), src),
-                            Operator = BinaryOperator.Plus,
-                            Left = new LiteralNode()
+                    Expression = new BinaryExpressionNode(
+                        op: BinaryOperator.Minus,
+                        token: new Token(TokenKind.AdditiveOperator, new Range(6, 7), src),
+                        left: new BinaryExpressionNode(
+                            op: BinaryOperator.Plus,
+                            token: new Token(TokenKind.AdditiveOperator, new Range(2, 3), src),
+                            left: new LiteralNode()
                             {
                                 Token = new Token(TokenKind.NumberLiteral, new Range(0, 1), src)
                             },
-                            Right = new LiteralNode()
+                            right: new LiteralNode()
                             {
                                 Token = new Token(TokenKind.NumberLiteral, new Range(4, 5), src)
-                            },
-                        },
-                        Right = new LiteralNode()
+                            }
+                        ),
+                        right: new LiteralNode()
                         {
                             Token = new Token(TokenKind.NumberLiteral, new Range(8, 9), src)
                         }
-                    }
+                    )
                 }
             }
         };
@@ -197,28 +195,26 @@ public class Tests
             {
                 new ExpressionStatementNode()
                 {
-                    Expression = new BinaryExpressionNode()
-                    {
-                        Operator = BinaryOperator.Plus,
-                        Token = new Token(TokenKind.AdditiveOperator, new Range(1, 2), src),
-                        Left = new LiteralNode()
+                    Expression = new BinaryExpressionNode(
+                        op: BinaryOperator.Plus,
+                        token: new Token(TokenKind.AdditiveOperator, new Range(1, 2), src),
+                        left: new LiteralNode()
                         {
                             Token = new Token(TokenKind.NumberLiteral, new Range(0, 1), src)
                         },
-                        Right = new BinaryExpressionNode()
-                        {
-                            Operator = BinaryOperator.Multiply,
-                            Token = new Token(TokenKind.MultiplicativeOperator, new Range(3, 4), src),
-                            Left = new LiteralNode()
+                        right: new BinaryExpressionNode(
+                            op: BinaryOperator.Multiply,
+                            token: new Token(TokenKind.MultiplicativeOperator, new Range(3, 4), src),
+                            left: new LiteralNode()
                             {
                                 Token = new Token(TokenKind.NumberLiteral, new Range(2, 3), src)
                             },
-                            Right = new LiteralNode()
+                            right: new LiteralNode()
                             {
                                 Token = new Token(TokenKind.NumberLiteral, new Range(4, 5), src)
-                            },
-                        }
-                    }
+                            }
+                        )
+                    )
                 }
             }
         };
@@ -238,28 +234,26 @@ public class Tests
             {
                 new ExpressionStatementNode()
                 {
-                    Expression = new BinaryExpressionNode()
-                    {
-                        Operator = BinaryOperator.Multiply,
-                        Token = new Token(TokenKind.MultiplicativeOperator, new Range(5, 6), src),
-                        Left = new BinaryExpressionNode()
-                        {
-                            Operator = BinaryOperator.Plus,
-                            Token = new Token(TokenKind.AdditiveOperator, new Range(2, 3), src),
-                            Left = new LiteralNode()
+                    Expression = new BinaryExpressionNode(
+                        op: BinaryOperator.Multiply,
+                        token: new Token(TokenKind.MultiplicativeOperator, new Range(5, 6), src),
+                        left: new BinaryExpressionNode(
+                            op: BinaryOperator.Plus,
+                            token: new Token(TokenKind.AdditiveOperator, new Range(2, 3), src),
+                            left: new LiteralNode()
                             {
                                 Token = new Token(TokenKind.NumberLiteral, new Range(1, 2), src)
                             },
-                            Right = new LiteralNode()
+                            right: new LiteralNode()
                             {
                                 Token = new Token(TokenKind.NumberLiteral, new Range(3, 4), src)
-                            },
-                        },
-                        Right = new LiteralNode()
+                            }
+                        ),
+                        right: new LiteralNode()
                         {
                             Token = new Token(TokenKind.NumberLiteral, new Range(6, 7), src)
-                        },
-                    }
+                        }
+                    )
                 }
             }
         };
@@ -283,15 +277,14 @@ public class Tests
                     {
                         new ExpressionStatementNode()
                         {
-                            Expression = new BinaryExpressionNode()
-                            {
-                                Operator = BinaryOperator.Plus,
-                                Token = new Token(TokenKind.AdditiveOperator, new Range(4, 5), src),
-                                Left = new LiteralNode
+                            Expression = new BinaryExpressionNode(
+                                BinaryOperator.Plus,
+                                new Token(TokenKind.AdditiveOperator, new Range(4, 5), src),
+                                left: new LiteralNode
                                     { Token = new Token(TokenKind.NumberLiteral, new Range(2, 3), src) },
-                                Right = new LiteralNode
+                                right: new LiteralNode
                                     { Token = new Token(TokenKind.NumberLiteral, new Range(6, 9), src) }
-                            }
+                            )
                         },
                         new StatementListNode()
                         {

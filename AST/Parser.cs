@@ -314,6 +314,7 @@ namespace AST
             return BinaryExpression(RelationalExpression, TokenKind.EqualityOperator);
         }
 
+        // RELATIONAL_OPERATOR: '<' '>' 
         /// RelationalExpression
         /// : AdditionalExpression
         /// | AdditionalExpression RELATIONAL_OPERATOR RelationalExpression
@@ -327,12 +328,13 @@ namespace AST
                 var op = Eat(Current.Kind);
                 var right = AdditiveExpression();
 
-                left = new BinaryExpressionNode()
-                {
-                    Token = op,
-                    Left = left,
-                    Right = right
-                };
+                left = new BinaryExpressionNode
+                (
+                    op: BinaryOperator.Unknown, // TODO: Combine operators
+                    token:op,
+                    left:left,
+                    right: right
+                );
             }
 
             return left;
@@ -499,27 +501,6 @@ namespace AST
             };
         }
 
-        // TODO: Group operators
-        private INode BinaryExpression(Func<INode> expression, params TokenKind[] tokens)
-        {
-            var left = expression();
-
-            while (Array.FindIndex(tokens, tokenKind => tokenKind == Current!.Kind) >= 0)
-            {
-                var op = Eat(Current!.Kind);
-                var right = expression();
-
-                left = new BinaryExpressionNode()
-                {
-                    Token = op,
-                    Left = left,
-                    Right = right
-                };
-            }
-
-            return left;
-        }
-
         private INode BinaryExpression(Func<INode> expression, TokenKind tokenKind)
         {
             var left = expression();
@@ -529,10 +510,9 @@ namespace AST
                 var token = Eat(Current!.Kind);
                 var right = expression();
 
-                left = new BinaryExpressionNode()
-                {
-                    Token = token,
-                    Operator = token.Value switch
+                left = new BinaryExpressionNode(
+                    token: token,
+                    op: token.Value switch
                     {
                         "+" => BinaryOperator.Plus,
                         "-" => BinaryOperator.Minus,
@@ -540,9 +520,9 @@ namespace AST
                         "/" => BinaryOperator.Divide,
                         _ => throw new SyntaxError($"Unknown binary operator: {token}", _content, token)
                     },
-                    Left = left,
-                    Right = right
-                };
+                    left: left,
+                    right: right
+                );
             }
 
             return left;

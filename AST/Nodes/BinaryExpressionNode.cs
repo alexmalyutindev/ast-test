@@ -9,6 +9,19 @@ public class BinaryExpressionNode : INode
     public BinaryOperator Operator;
     public INode? Left { get; init; }
     public INode? Right { get; init; }
+
+    public BinaryExpressionNode(
+        BinaryOperator op,
+        Token token,
+        INode left,
+        INode right
+    )
+    {
+        Operator = op;
+        Token = token;
+        Left = left;
+        Right = right;
+    }
 }
 
 public enum BinaryOperator
@@ -18,4 +31,7 @@ public enum BinaryOperator
     Minus,
     Multiply,
     Divide,
+    Less, 
+    Greater,
+    Equal
 }
