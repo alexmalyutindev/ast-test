@@ -6,26 +6,16 @@ public class BinaryExpressionNode : INode
 
     public Token Token { get; init; } = default!;
 
+    public BinaryOperator Operator;
     public INode? Left { get; init; }
     public INode? Right { get; init; }
 }
 
-public class LogicalExpressionNode : INode
+public enum BinaryOperator
 {
-    public string Name => nameof(LogicalExpressionNode);
-
-    public Token Token { get; init; } = default!;
-
-    public INode? Left { get; init; }
-    public INode? Right { get; init; }
-}
-
-public class AssignmentExpressionNode : INode
-{
-    public string Name => nameof(AssignmentExpressionNode);
-
-    public Token Token { get; init; } = default!;
-
-    public INode? Left;
-    public INode? Right;
+    Unknown = 0,
+    Plus,
+    Minus,
+    Multiply,
+    Divide,
 }

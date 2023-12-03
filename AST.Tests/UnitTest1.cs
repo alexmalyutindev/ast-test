@@ -158,10 +158,12 @@ public class Tests
                 {
                     Expression = new BinaryExpressionNode()
                     {
-                        Token = new Token(TokenKind.MinusToken, new Range(6, 7), src),
+                        Token = new Token(TokenKind.AdditiveOperator, new Range(6, 7), src),
+                        Operator = BinaryOperator.Minus,
                         Left = new BinaryExpressionNode()
                         {
-                            Token = new Token(TokenKind.PlusToken, new Range(2, 3), src),
+                            Token = new Token(TokenKind.AdditiveOperator, new Range(2, 3), src),
+                            Operator = BinaryOperator.Plus,
                             Left = new LiteralNode()
                             {
                                 Token = new Token(TokenKind.NumberLiteral, new Range(0, 1), src)
@@ -197,18 +199,20 @@ public class Tests
                 {
                     Expression = new BinaryExpressionNode()
                     {
+                        Operator = BinaryOperator.Plus,
+                        Token = new Token(TokenKind.AdditiveOperator, new Range(1, 2), src),
                         Left = new LiteralNode()
                         {
                             Token = new Token(TokenKind.NumberLiteral, new Range(0, 1), src)
                         },
-                        Token = new Token(TokenKind.PlusToken, new Range(1, 2), src),
                         Right = new BinaryExpressionNode()
                         {
+                            Operator = BinaryOperator.Multiply,
+                            Token = new Token(TokenKind.MultiplicativeOperator, new Range(3, 4), src),
                             Left = new LiteralNode()
                             {
                                 Token = new Token(TokenKind.NumberLiteral, new Range(2, 3), src)
                             },
-                            Token = new Token(TokenKind.MultiplyToken, new Range(3, 4), src),
                             Right = new LiteralNode()
                             {
                                 Token = new Token(TokenKind.NumberLiteral, new Range(4, 5), src)
@@ -236,9 +240,12 @@ public class Tests
                 {
                     Expression = new BinaryExpressionNode()
                     {
+                        Operator = BinaryOperator.Multiply,
+                        Token = new Token(TokenKind.MultiplicativeOperator, new Range(5, 6), src),
                         Left = new BinaryExpressionNode()
                         {
-                            Token = new Token(TokenKind.PlusToken, new Range(2, 3), src),
+                            Operator = BinaryOperator.Plus,
+                            Token = new Token(TokenKind.AdditiveOperator, new Range(2, 3), src),
                             Left = new LiteralNode()
                             {
                                 Token = new Token(TokenKind.NumberLiteral, new Range(1, 2), src)
@@ -248,7 +255,6 @@ public class Tests
                                 Token = new Token(TokenKind.NumberLiteral, new Range(3, 4), src)
                             },
                         },
-                        Token = new Token(TokenKind.MultiplyToken, new Range(5, 6), src),
                         Right = new LiteralNode()
                         {
                             Token = new Token(TokenKind.NumberLiteral, new Range(6, 7), src)
@@ -266,7 +272,7 @@ public class Tests
     {
         var src = """{ 2 + 123; { "456"; } } { }""";
         var ast = new Parser(src).Parse();
-        var ast2 = new ProgramNode()
+        var expected = new ProgramNode()
         {
             ProgramName = "Program",
             Body = new INode[]
@@ -279,7 +285,8 @@ public class Tests
                         {
                             Expression = new BinaryExpressionNode()
                             {
-                                Token = new Token(TokenKind.PlusToken, new Range(4, 5), src),
+                                Operator = BinaryOperator.Plus,
+                                Token = new Token(TokenKind.AdditiveOperator, new Range(4, 5), src),
                                 Left = new LiteralNode
                                     { Token = new Token(TokenKind.NumberLiteral, new Range(2, 3), src) },
                                 Right = new LiteralNode
@@ -303,7 +310,7 @@ public class Tests
             }
         };
 
-        Compare(ast, ast2);
+        Compare(ast, expected);
     }
 
     private void Compare(INode current, INode expected)
@@ -327,8 +334,8 @@ public class Tests
         }
 
         Assert.That(
-            expectedJson,
-            Is.EqualTo(json),
+            json,
+            Is.EqualTo(expectedJson),
             () => sb.ToString()
         );
 

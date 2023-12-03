@@ -8,6 +8,8 @@ public class Interpreter
     public readonly Stack<string> StringStack = new();
     public readonly Dictionary<string, object> Variables = new();
 
+    private Memory<byte> _mem;
+
     private readonly Parser _parser;
     private readonly INode _ast;
 
@@ -124,20 +126,21 @@ public class Interpreter
         if (type == TokenKind.NumberLiteral)
         {
             var (right, left) = (Stack.Pop(), Stack.Pop());
-            switch (binaryExpressionNode.Token.Kind)
+            // TODO: Optimize
+            switch (binaryExpressionNode.Token.Value)
             {
-                case TokenKind.PlusToken:
+                case "+":
                     Stack.Push(left + right);
                     break;
-                case TokenKind.MinusToken:
+                case "-":
                     Stack.Push(left - right);
                     break;
 
-                case TokenKind.MultiplyToken:
+                case "*":
                     Stack.Push(left * right);
                     break;
 
-                case TokenKind.DivideToken:
+                case "/":
                     Stack.Push(left / right);
                     break;
             }

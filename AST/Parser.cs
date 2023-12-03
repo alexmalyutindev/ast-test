@@ -344,7 +344,7 @@ namespace AST
         /// ;
         private INode AdditiveExpression()
         {
-            return BinaryExpression(MultiplicativeExpression, TokenKind.PlusToken, TokenKind.MinusToken);
+            return BinaryExpression(MultiplicativeExpression, TokenKind.AdditiveOperator);
         }
 
         /// MultiplicativeExpression
@@ -353,7 +353,7 @@ namespace AST
         /// ;
         private INode MultiplicativeExpression()
         {
-            return BinaryExpression(UnaryExpression, TokenKind.MultiplyToken, TokenKind.DivideToken);
+            return BinaryExpression(UnaryExpression, TokenKind.MultiplicativeOperator);
         }
 
         /// UnaryExpression
@@ -366,9 +366,7 @@ namespace AST
             var op = Current!.Kind switch
             {
                 // TODO: Combine to ADDITIVE_OPERATOR
-                TokenKind.PlusToken => Eat(TokenKind.PlusToken),
-                TokenKind.MinusToken => Eat(TokenKind.MinusToken),
-
+                TokenKind.AdditiveOperator => Eat(TokenKind.AdditiveOperator),
                 TokenKind.LogicalNot => Eat(TokenKind.LogicalNot),
                 _ => null,
             };
@@ -514,6 +512,34 @@ namespace AST
                 left = new BinaryExpressionNode()
                 {
                     Token = op,
+                    Left = left,
+                    Right = right
+                };
+            }
+
+            return left;
+        }
+
+        private INode BinaryExpression(Func<INode> expression, TokenKind tokenKind)
+        {
+            var left = expression();
+
+            while (Current!.Kind == tokenKind)
+            {
+                var token = Eat(Current!.Kind);
+                var right = expression();
+
+                left = new BinaryExpressionNode()
+                {
+                    Token = token,
+                    Operator = token.Value switch
+                    {
+                        "+" => BinaryOperator.Plus,
+                        "-" => BinaryOperator.Minus,
+                        "*" => BinaryOperator.Multiply,
+                        "/" => BinaryOperator.Divide,
+                        _ => throw new SyntaxError($"Unknown binary operator: {token}", _content, token)
+                    },
                     Left = left,
                     Right = right
                 };

@@ -25,10 +25,10 @@ public enum TokenKind
     
     WhiteSpace = ' ',
 
-    PlusToken = '+',
-    MinusToken = '-',
-    MultiplyToken = '*',
-    DivideToken = '/',
+    AdditiveOperator = '+', // '+', '-'
+    // MinusToken = '-',
+    MultiplicativeOperator = '*', // '*', '/'
+    // DivideToken = '/',
 
     OpenParentheses = '(',
     CloseParentheses = ')',

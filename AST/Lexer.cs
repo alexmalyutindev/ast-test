@@ -53,10 +53,10 @@ public partial class Lexer
         (Identifier(), TokenKind.Identifier),
 
         // Math
-        (new Regex(@"\G\+", RegexOptions.Compiled), TokenKind.PlusToken),
-        (new Regex(@"\G\-", RegexOptions.Compiled), TokenKind.MinusToken),
-        (new Regex(@"\G\*", RegexOptions.Compiled), TokenKind.MultiplyToken),
-        (new Regex(@"\G\/", RegexOptions.Compiled), TokenKind.DivideToken),
+        (new Regex(@"\G[+-]", RegexOptions.Compiled), TokenKind.AdditiveOperator),
+        // (new Regex(@"\G\-", RegexOptions.Compiled), TokenKind.MinusToken),
+        (new Regex(@"\G[*/]", RegexOptions.Compiled), TokenKind.MultiplicativeOperator),
+        // (new Regex(@"\G\/", RegexOptions.Compiled), TokenKind.DivideToken),
 
         (StringLiteral(), TokenKind.StringLiteral),
     };
