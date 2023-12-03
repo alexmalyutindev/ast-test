@@ -1,9 +1,12 @@
+using System.Linq.Expressions;
 using AST.Nodes;
 
 namespace AST.Interpreter;
 
 public class Interpreter
 {
+    public INode Program => _ast;
+
     public readonly Stack<int> Stack = new();
     public readonly Stack<string> StringStack = new();
     public readonly Dictionary<string, object> Variables = new();
@@ -79,20 +82,14 @@ public class Interpreter
                 EvalBinary(b);
                 break;
             case LiteralNode n:
-                type = n.Token.Kind;
-                switch (n.Token.Kind)
-                {
-                    case TokenKind.NumberLiteral:
-                        Stack.Push(int.Parse(n.Token.Value));
-                        break;
-                    case TokenKind.StringLiteral:
-                        StringStack.Push(n.Token.Value[1..^1]);
-                        break;
-                    default:
-                        throw new Exception($"Not supported Literal: {n.Token.Kind}");
-                }
-
+                type = TokenKind.NumberLiteral;
+                Stack.Push(int.Parse(n.Token.Value));
                 break;
+            case LiteralNode<string> s:
+                type = TokenKind.StringLiteral;
+                StringStack.Push(s.Value);
+                break;
+
             case IdentifierNode id:
                 Stack.Push((int) Variables[id.Token.Value]);
                 break;
@@ -104,19 +101,12 @@ public class Interpreter
                 EvalBinary(b);
                 break;
             case LiteralNode n:
-                type = n.Token.Kind;
-                switch (n.Token.Kind)
-                {
-                    case TokenKind.NumberLiteral:
-                        Stack.Push(int.Parse(n.Token.Value));
-                        break;
-                    case TokenKind.StringLiteral:
-                        StringStack.Push(n.Token.Value[1..^1]);
-                        break;
-                    default:
-                        throw new Exception($"Not supported Literal: {n.Token.Kind}");
-                }
-
+                type = TokenKind.NumberLiteral;
+                Stack.Push(int.Parse(n.Token.Value));
+                break;
+            case LiteralNode<string> s:
+                type = TokenKind.StringLiteral;
+                StringStack.Push(s.Value);
                 break;
             case IdentifierNode id:
                 Stack.Push((int) Variables[id.Token.Value]);
@@ -126,7 +116,6 @@ public class Interpreter
         if (type == TokenKind.NumberLiteral)
         {
             var (right, left) = (Stack.Pop(), Stack.Pop());
-            // TODO: Optimize
             switch (binaryExpressionNode.Operator)
             {
                 case BinaryOperator.Plus:
@@ -146,6 +135,11 @@ public class Interpreter
         }
         else
         {
+            if (binaryExpressionNode.Operator != BinaryOperator.Plus)
+            {
+                throw new Exception("Not supported operation on stings!");
+            }
+
             var (right, left) = (StringStack.Pop(), StringStack.Pop());
             StringStack.Push(left + right);
         }

@@ -55,22 +55,19 @@ public class Tests
     {
         var src = """ "abc 69" ;""";
         var ast = new Parser(src).Parse();
-        var ast2 = new ProgramNode()
+        var expected = new ProgramNode()
         {
             ProgramName = "Program",
             Body = new INode[]
             {
                 new ExpressionStatementNode()
                 {
-                    Expression = new LiteralNode()
-                    {
-                        Token = new Token(TokenKind.StringLiteral, new Range(1, 1 + 8), src)
-                    }
+                    Expression = new LiteralNode<string>("abc 69"),
                 },
             }
         };
 
-        Compare(ast, ast2);
+        Compare(ast, expected);
     }
 
     [Test]
@@ -97,10 +94,7 @@ public class Tests
                 },
                 new ExpressionStatementNode()
                 {
-                    Expression = new LiteralNode()
-                    {
-                        Token = new Token(TokenKind.StringLiteral, new Range(4, 4 + 5), src)
-                    }
+                    Expression = new LiteralNode<string>("abc"),
                 },
             }
         };
@@ -131,10 +125,7 @@ public class Tests
                         },
                         new ExpressionStatementNode()
                         {
-                            Expression = new LiteralNode()
-                            {
-                                Token = new Token(TokenKind.StringLiteral, new Range(6, 11), src)
-                            }
+                            Expression = new LiteralNode<string>("abc"),
                         },
                     },
                 }
@@ -283,11 +274,7 @@ public class Tests
                         {
                             Children = new INode[]
                             {
-                                new ExpressionStatementNode()
-                                {
-                                    Expression = new LiteralNode()
-                                        { Token = new Token(TokenKind.StringLiteral, new Range(13, 18), src) }
-                                },
+                                new ExpressionStatementNode { Expression = new LiteralNode<string>("456") },
                             },
                         },
                     },

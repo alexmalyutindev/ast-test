@@ -453,10 +453,8 @@ namespace AST
         /// ;
         private INode StringLiteral()
         {
-            return new LiteralNode()
-            {
-                Token = Eat(TokenKind.StringLiteral),
-            };
+            var token = Eat(TokenKind.StringLiteral);
+            return new LiteralNode<string>(token.Value[1..^1]);
         }
 
         /// NumberLiteral
