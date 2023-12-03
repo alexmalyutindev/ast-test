@@ -183,9 +183,9 @@ namespace AST
         /// : VariableDeclaration
         /// | VariableDeclarationList ',' VariableDeclaration
         /// ;
-        private INode[] VariableDeclarationList()
+        private VariableDeclarationNode[] VariableDeclarationList()
         {
-            var declarations = new List<INode>()
+            var declarations = new List<VariableDeclarationNode>()
             {
                 VariableDeclaration()
             };
@@ -202,7 +202,7 @@ namespace AST
         /// VariableDeclaration
         /// : Identifier OptVariableInitializer
         /// ;
-        private INode VariableDeclaration()
+        private VariableDeclarationNode VariableDeclaration()
         {
             var identifier = Identifier();
 
@@ -463,10 +463,8 @@ namespace AST
         private INode NumberLiteral()
         {
             var token = Eat(TokenKind.NumberLiteral);
-            return new LiteralNode
-            {
-                Token = token
-            };
+            // TODO: Add other number types!
+            return new LiteralNode<int>(int.Parse(token.Value));
         }
 
         /// BooleanLiteral
@@ -480,10 +478,7 @@ namespace AST
                 _ => throw new SyntaxError($"Expected boolean literal but get {Current}", _content, Current),
             };
 
-            return new LiteralNode
-            {
-                Token = token
-            };
+            return new LiteralNode<bool>(bool.Parse(token.Value));
         }
 
         /// NullLiteral
@@ -492,10 +487,8 @@ namespace AST
         private INode NullLiteral()
         {
             var token = Eat(TokenKind.NullLiteral);
-            return new LiteralNode
-            {
-                Token = token
-            };
+            // TODO: Decide what to do with Nulls!
+            return new LiteralNode<object>(null!);
         }
 
         private INode BinaryExpression(Func<INode> expression, TokenKind tokenKind)

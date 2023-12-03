@@ -1,4 +1,3 @@
-using System.Linq.Expressions;
 using AST.Nodes;
 
 namespace AST.Interpreter;
@@ -10,8 +9,6 @@ public class Interpreter
     public readonly Stack<int> Stack = new();
     public readonly Stack<string> StringStack = new();
     public readonly Dictionary<string, object> Variables = new();
-
-    private Memory<byte> _mem;
 
     private readonly Parser _parser;
     private readonly INode _ast;
@@ -53,12 +50,13 @@ public class Interpreter
 
     private void VariableDeclaration(VariableStatementNode node)
     {
-        foreach (VariableDeclarationNode declaration in node.Declarations)
+        foreach (var declaration in node.Declarations)
         {
             var id = declaration.Identifier as IdentifierNode;
             Variables[id!.Token.Value] = declaration.Initializer switch
             {
-                LiteralNode l => l.Token.Kind == TokenKind.NumberLiteral ? int.Parse(l.Token.Value) : l.Token.Value,
+                LiteralNode<int> l => l.Value,
+                LiteralNode<string> l => l.Value,
                 ExpressionStatementNode exp => EvalPop(exp),
                 BinaryExpressionNode exp => EvalPop(exp),
                 _ => 0,
@@ -81,9 +79,10 @@ public class Interpreter
             case BinaryExpressionNode b:
                 EvalBinary(b);
                 break;
-            case LiteralNode n:
+            case LiteralNode<int> n:
                 type = TokenKind.NumberLiteral;
-                Stack.Push(int.Parse(n.Token.Value));
+                // TODO: Generalise stack and memory
+                Stack.Push(n.Value);
                 break;
             case LiteralNode<string> s:
                 type = TokenKind.StringLiteral;
@@ -100,9 +99,10 @@ public class Interpreter
             case BinaryExpressionNode b:
                 EvalBinary(b);
                 break;
-            case LiteralNode n:
+            case LiteralNode<int> n:
                 type = TokenKind.NumberLiteral;
-                Stack.Push(int.Parse(n.Token.Value));
+                // TODO: Generalise stack and memory
+                Stack.Push(n.Value);
                 break;
             case LiteralNode<string> s:
                 type = TokenKind.StringLiteral;
@@ -116,6 +116,7 @@ public class Interpreter
         if (type == TokenKind.NumberLiteral)
         {
             var (right, left) = (Stack.Pop(), Stack.Pop());
+            // TODO: Compare operators support!
             switch (binaryExpressionNode.Operator)
             {
                 case BinaryOperator.Plus:
