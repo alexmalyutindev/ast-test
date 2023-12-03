@@ -127,20 +127,19 @@ public class Interpreter
         {
             var (right, left) = (Stack.Pop(), Stack.Pop());
             // TODO: Optimize
-            switch (binaryExpressionNode.Token.Value)
+            switch (binaryExpressionNode.Operator)
             {
-                case "+":
+                case BinaryOperator.Plus:
                     Stack.Push(left + right);
                     break;
-                case "-":
+                case BinaryOperator.Minus:
                     Stack.Push(left - right);
                     break;
 
-                case "*":
+                case BinaryOperator.Multiply:
                     Stack.Push(left * right);
                     break;
-
-                case "/":
+                case BinaryOperator.Divide:
                     Stack.Push(left / right);
                     break;
             }

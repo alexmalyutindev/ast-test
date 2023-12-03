@@ -62,7 +62,7 @@ namespace AST
         /// Program
         /// : StatementList
         /// ;
-        private INode Program()
+        private ProgramNode Program()
         {
             return new ProgramNode()
             {
@@ -331,7 +331,6 @@ namespace AST
                 left = new BinaryExpressionNode
                 (
                     op: BinaryOperator.Unknown, // TODO: Combine operators
-                    token:op,
                     left:left,
                     right: right
                 );
@@ -511,7 +510,6 @@ namespace AST
                 var right = expression();
 
                 left = new BinaryExpressionNode(
-                    token: token,
                     op: token.Value switch
                     {
                         "+" => BinaryOperator.Plus,

@@ -4,7 +4,7 @@ public class BinaryExpressionNode : INode
 {
     public string Name => nameof(BinaryExpressionNode);
 
-    public Token Token { get; init; } = default!;
+    // public Token Token { get; init; } = default!;
 
     public BinaryOperator Operator;
     public INode? Left { get; init; }
@@ -12,13 +12,11 @@ public class BinaryExpressionNode : INode
 
     public BinaryExpressionNode(
         BinaryOperator op,
-        Token token,
         INode left,
         INode right
     )
     {
         Operator = op;
-        Token = token;
         Left = left;
         Right = right;
     }
