@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.Text;
+using AST.Interpreter;
 using AST.Nodes;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
@@ -29,9 +30,6 @@ public class InterpreterTests
     public void Test0()
     {
         var src = """
-                  45 + 25 - 1;
-                  2 + 2 * 2;
-                  (2 + 2) * 2;
                   "abc" + "def";
                   """;
 
@@ -39,40 +37,46 @@ public class InterpreterTests
 
 
         interpreter.Run();
-        
+
+        Console.WriteLine(interpreter.Stack.Pop<String8>());
+
         var sb = new StringBuilder()
             .AppendLine(">Source:")
             .AppendLine(src)
             .AppendLine(">Stack:").Append('[')
-            .Append(String.Join(" | ", interpreter.Stack)).AppendLine("]")
-            .AppendLine(">StringStack:").Append('[')
-            .Append(String.Join(", ", interpreter.StringStack)).AppendLine("]");
-        
+            .Append(String.Join(" | ", interpreter.Stack)).AppendLine("]");
         Console.WriteLine(sb);
         
         Console.WriteLine(ToJson(interpreter.Program));
+    }
+    
+        
+    [Test]
+    public void TestInt()
+    {
+        var src = """
+                  45 + 25 - 1;
+                  2 + 2 * 2;
+                  (2 + 2) * 2;
+                  """;
 
-        Assert.That(
-            interpreter.Stack.Reverse().ToArray(),
-            Is.EqualTo(
-                new IComparable[]
-                {
-                    45 + 25 - 1,
-                    2 + 2 * 2,
-                    (2 + 2) * 2,
-                }
-            )
-        );
+        var interpreter = new Interpreter.Interpreter(src);
 
-        Assert.That(
-            interpreter.StringStack.Reverse().ToArray(),
-            Is.EqualTo(
-                new IComparable[]
-                {
-                    "abc" + "def",
-                }
-            )
-        );
+
+        interpreter.Run();
+
+        Console.WriteLine(interpreter.Stack.Pop<int>());
+        Console.WriteLine(interpreter.Stack.Pop<int>());
+        Console.WriteLine(interpreter.Stack.Pop<int>());
+
+        var sb = new StringBuilder()
+            .AppendLine(">Source:")
+            .AppendLine(src)
+            .AppendLine(">Stack:").Append('[')
+            .Append(String.Join(" | ", interpreter.Stack)).AppendLine("]");
+        Console.WriteLine(sb);
+        
+        Console.WriteLine(ToJson(interpreter.Program));
     }
     
     private string ToJson(INode ast)

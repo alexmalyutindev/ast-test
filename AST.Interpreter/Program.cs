@@ -22,8 +22,6 @@ var sb = new StringBuilder()
     .AppendLine(src)
     .AppendLine(">Stack:")
     .AppendLine(String.Join(", ", interpreter.Stack))
-    .AppendLine(">StringStack:")
-    .AppendLine(String.Join(", ", interpreter.StringStack))
     .AppendLine(">Variables:")
     .AppendLine(string.Join(", ", interpreter.Variables.Select(pair => $"{pair.Key}: {pair.Value}")))
     ;

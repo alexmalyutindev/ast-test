@@ -6,8 +6,7 @@ public class Interpreter
 {
     public INode Program => _ast;
 
-    public readonly Stack<int> Stack = new();
-    public readonly Stack<string> StringStack = new();
+    public readonly Stack Stack = new();
     public readonly Dictionary<string, object> Variables = new();
 
     private readonly Parser _parser;
@@ -66,8 +65,9 @@ public class Interpreter
 
     private object EvalPop(INode exp)
     {
+        // TODO: 
         Eval(exp);
-        return Stack.Pop();
+        return Stack.Pop<int>();
     }
 
     private void EvalBinary(BinaryExpressionNode binaryExpressionNode)
@@ -81,12 +81,11 @@ public class Interpreter
                 break;
             case LiteralNode<int> n:
                 type = TokenKind.NumberLiteral;
-                // TODO: Generalise stack and memory
                 Stack.Push(n.Value);
                 break;
             case LiteralNode<string> s:
                 type = TokenKind.StringLiteral;
-                StringStack.Push(s.Value);
+                Stack.Push(s.Value);
                 break;
 
             case IdentifierNode id:
@@ -101,12 +100,11 @@ public class Interpreter
                 break;
             case LiteralNode<int> n:
                 type = TokenKind.NumberLiteral;
-                // TODO: Generalise stack and memory
                 Stack.Push(n.Value);
                 break;
             case LiteralNode<string> s:
                 type = TokenKind.StringLiteral;
-                StringStack.Push(s.Value);
+                Stack.Push(s.Value);
                 break;
             case IdentifierNode id:
                 Stack.Push((int) Variables[id.Token.Value]);
@@ -115,7 +113,7 @@ public class Interpreter
 
         if (type == TokenKind.NumberLiteral)
         {
-            var (right, left) = (Stack.Pop(), Stack.Pop());
+            var (right, left) = (Stack.Pop<int>(), Stack.Pop<int>());
             // TODO: Compare operators support!
             switch (binaryExpressionNode.Operator)
             {
@@ -141,8 +139,8 @@ public class Interpreter
                 throw new Exception("Not supported operation on stings!");
             }
 
-            var (right, left) = (StringStack.Pop(), StringStack.Pop());
-            StringStack.Push(left + right);
+            var (right, left) = (Stack.Pop<String8>(), Stack.Pop<String8>());
+            Stack.Push((String8) (left + right));
         }
     }
 }
