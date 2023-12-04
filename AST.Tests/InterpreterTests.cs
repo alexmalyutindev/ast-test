@@ -25,9 +25,9 @@ public class InterpreterTests
             ContractResolver = new AstContractResolver(),
         };
     }
-    
+
     [Test]
-    public void Test0()
+    public void TestStr()
     {
         var src = """
                   "abc" + "def";
@@ -38,7 +38,7 @@ public class InterpreterTests
 
         interpreter.Run();
 
-        Console.WriteLine(interpreter.Stack.Pop<String8>());
+        Assert.That(interpreter.Stack.PopString(), Is.EqualTo("abc" + "def"));
 
         var sb = new StringBuilder()
             .AppendLine(">Source:")
@@ -46,11 +46,11 @@ public class InterpreterTests
             .AppendLine(">Stack:").Append('[')
             .Append(String.Join(" | ", interpreter.Stack)).AppendLine("]");
         Console.WriteLine(sb);
-        
+
         Console.WriteLine(ToJson(interpreter.Program));
     }
-    
-        
+
+
     [Test]
     public void TestInt()
     {
@@ -61,13 +61,11 @@ public class InterpreterTests
                   """;
 
         var interpreter = new Interpreter.Interpreter(src);
-
-
         interpreter.Run();
 
-        Console.WriteLine(interpreter.Stack.Pop<int>());
-        Console.WriteLine(interpreter.Stack.Pop<int>());
-        Console.WriteLine(interpreter.Stack.Pop<int>());
+        Assert.That(interpreter.Stack.Pop<int>(), Is.EqualTo((2 + 2) * 2));
+        Assert.That(interpreter.Stack.Pop<int>(), Is.EqualTo(2 + 2 * 2));
+        Assert.That(interpreter.Stack.Pop<int>(), Is.EqualTo(45 + 25 - 1));
 
         var sb = new StringBuilder()
             .AppendLine(">Source:")
@@ -75,10 +73,10 @@ public class InterpreterTests
             .AppendLine(">Stack:").Append('[')
             .Append(String.Join(" | ", interpreter.Stack)).AppendLine("]");
         Console.WriteLine(sb);
-        
+
         Console.WriteLine(ToJson(interpreter.Program));
     }
-    
+
     private string ToJson(INode ast)
     {
         return JsonConvert.SerializeObject(ast, _settings);

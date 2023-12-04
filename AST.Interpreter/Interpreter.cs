@@ -74,6 +74,24 @@ public class Interpreter
     {
         var type = TokenKind.NumberLiteral;
 
+        switch (binaryExpressionNode.Right)
+        {
+            case BinaryExpressionNode b:
+                EvalBinary(b);
+                break;
+            case LiteralNode<int> n:
+                type = TokenKind.NumberLiteral;
+                Stack.Push(n.Value);
+                break;
+            case LiteralNode<string> s:
+                type = TokenKind.StringLiteral;
+                Stack.Push(s.Value);
+                break;
+            case IdentifierNode id:
+                Stack.Push((int) Variables[id.Token.Value]);
+                break;
+        }
+
         switch (binaryExpressionNode.Left)
         {
             case BinaryExpressionNode b:
@@ -93,54 +111,42 @@ public class Interpreter
                 break;
         }
 
-        switch (binaryExpressionNode.Right)
+        switch (type)
         {
-            case BinaryExpressionNode b:
-                EvalBinary(b);
-                break;
-            case LiteralNode<int> n:
-                type = TokenKind.NumberLiteral;
-                Stack.Push(n.Value);
-                break;
-            case LiteralNode<string> s:
-                type = TokenKind.StringLiteral;
-                Stack.Push(s.Value);
-                break;
-            case IdentifierNode id:
-                Stack.Push((int) Variables[id.Token.Value]);
-                break;
-        }
-
-        if (type == TokenKind.NumberLiteral)
-        {
-            var (right, left) = (Stack.Pop<int>(), Stack.Pop<int>());
-            // TODO: Compare operators support!
-            switch (binaryExpressionNode.Operator)
+            case TokenKind.NumberLiteral:
             {
-                case BinaryOperator.Plus:
-                    Stack.Push(left + right);
-                    break;
-                case BinaryOperator.Minus:
-                    Stack.Push(left - right);
-                    break;
+                var (left, right) = (Stack.Pop<int>(), Stack.Pop<int>());
+                // TODO: Compare operators support!
+                switch (binaryExpressionNode.Operator)
+                {
+                    case BinaryOperator.Plus:
+                        Stack.Push(left + right);
+                        break;
+                    case BinaryOperator.Minus:
+                        Stack.Push(left - right);
+                        break;
 
-                case BinaryOperator.Multiply:
-                    Stack.Push(left * right);
-                    break;
-                case BinaryOperator.Divide:
-                    Stack.Push(left / right);
-                    break;
+                    case BinaryOperator.Multiply:
+                        Stack.Push(left * right);
+                        break;
+                    case BinaryOperator.Divide:
+                        Stack.Push(left / right);
+                        break;
+                }
+
+                break;
             }
-        }
-        else
-        {
-            if (binaryExpressionNode.Operator != BinaryOperator.Plus)
+            case TokenKind.StringLiteral:
             {
-                throw new Exception("Not supported operation on stings!");
-            }
+                if (binaryExpressionNode.Operator != BinaryOperator.Plus)
+                {
+                    throw new Exception("Not supported operation on stings!");
+                }
 
-            var (right, left) = (Stack.Pop<String8>(), Stack.Pop<String8>());
-            Stack.Push((String8) (left + right));
+                var (right, left) = (Stack.PopString(), Stack.PopString());
+                Stack.Push(left + right);
+                break;
+            }
         }
     }
 }
