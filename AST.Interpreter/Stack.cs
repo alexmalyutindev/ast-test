@@ -10,11 +10,13 @@ public class Stack
     
     private int _sp = 0;
     private readonly Memory<byte> _stack = new byte[64];
+    private readonly Stack<Type> _stackValueTypes = new();
 
     public int Push<T>(T value) where T : struct
     {
         var size = Unsafe.SizeOf<T>();
         MemoryMarshal.Write(_stack.Slice(_sp, size).Span, ref value);
+        _stackValueTypes.Push(typeof(T));
 
         _sp += size;
         return _sp;
@@ -27,6 +29,7 @@ public class Stack
         var ptr = _heap.Alloc(value);
 
         MemoryMarshal.Write(_stack.Span, ref ptr);
+        _stackValueTypes.Push(typeof(int));
 
         _sp += size;
         return _sp;
@@ -36,6 +39,8 @@ public class Stack
     {
         var size = Unsafe.SizeOf<T>();
         _sp -= size;
+        
+        _stackValueTypes.Pop();
         return MemoryMarshal.Read<T>(_stack.Slice(_sp, size).Span);
     }
     
@@ -44,6 +49,7 @@ public class Stack
         var size = Unsafe.SizeOf<int>();
         _sp -= size;
         var ptr = MemoryMarshal.Read<int>(_stack.Slice(_sp, size).Span);
+        _stackValueTypes.Pop();
 
         return _heap.GetValue<string>(ptr);
     }
